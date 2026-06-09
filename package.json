@@ -33,6 +33,7 @@
     "build": "pnpm --filter @cloudflared/web build",
     "start": "pnpm --filter @cloudflared/web start",
     "lint": "pnpm --filter @cloudflared/web lint",
+    "typecheck": "pnpm -r typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

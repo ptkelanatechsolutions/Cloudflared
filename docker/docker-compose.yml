@@ -1,0 +1,22 @@
+services:
+  cloudflared-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      args:
+        CLOUDFLARED_VERSION: ${CLOUDFLARED_VERSION:-latest}
+    image: cloudflared-web:latest
+    container_name: cloudflared-web
+    restart: unless-stopped
+    # Host networking lets cloudflared reach services running on the host.
+    # Linux only — on Docker Desktop, remove network_mode and use the ports block.
+    network_mode: host
+    environment:
+      WEBUI_PORT: ${WEBUI_PORT:-23899}
+    # ports:
+    #   - "${WEBUI_PORT:-23899}:23899"
+    volumes:
+      - cloudflared-config:/config
+
+volumes:
+  cloudflared-config:

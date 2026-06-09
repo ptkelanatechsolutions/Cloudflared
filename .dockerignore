@@ -1,0 +1,16 @@
+# Dependencies & build output (rebuilt inside the image)
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+
+# VCS & tooling
+.git
+.github
+**/*.log
+**/.DS_Store
+.vscode
+.idea
+
+# Local env
+**/.env*
