@@ -177,7 +177,15 @@ export function TunnelControl({ initial }: { initial: DashboardState }) {
                 type="password"
                 autoComplete="off"
                 value={tokenInput}
-                onChange={(e) => setTokenInput(e.target.value)}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw.includes(" ")) {
+                    const parts = raw.trim().split(/\s+/);
+                    setTokenInput(parts[parts.length - 1]);
+                  } else {
+                    setTokenInput(raw);
+                  }
+                }}
                 onKeyDown={(e) => e.key === "Enter" && handleSaveToken()}
                 placeholder={
                   state.tokenSet

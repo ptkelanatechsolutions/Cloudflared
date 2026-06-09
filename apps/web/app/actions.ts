@@ -45,17 +45,14 @@ export async function stopTunnel(): Promise<DashboardState> {
 
 /* ── Version checker ────────────────────────────────── */
 
-const CURRENT_VERSION = "1.2.0";
-const GHCR_TAGS_URL = "https://ghcr.io/v2/ptkelanatechsolutions/cloudflared/tags/list";
+const CURRENT_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0-dev";
+const GITHUB_RELEASES_API =
+  "https://api.github.com/repos/ptkelanatechsolutions/Cloudflared/releases/latest";
 
 export interface VersionCheck {
   current: string;
   latest: string | null;
   hasUpdate: boolean;
-}
-
-function isValidSemver(s: string): boolean {
-  return /^\d+\.\d+\.\d+$/.test(s);
 }
 
 function semverGt(a: string, b: string): boolean {
@@ -70,21 +67,20 @@ function semverGt(a: string, b: string): boolean {
 
 export async function checkVersion(): Promise<VersionCheck> {
   try {
-    const res = await fetch(GHCR_TAGS_URL, {
+    const res = await fetch(GITHUB_RELEASES_API, {
       signal: AbortSignal.timeout(10_000),
+      headers: { Accept: "application/vnd.github.v3+json" },
     });
     if (!res.ok) {
       return { current: CURRENT_VERSION, latest: null, hasUpdate: false };
     }
-    const data = (await res.json()) as { tags?: string[] };
-    const tags = (data.tags ?? []).filter(isValidSemver);
-    if (tags.length === 0) {
+    const data = (await res.json()) as { tag_name?: string };
+    const tag = data.tag_name;
+    if (!tag || !/^\d+\.\d+\.\d+$/.test(tag)) {
       return { current: CURRENT_VERSION, latest: null, hasUpdate: false };
     }
-    const sorted = tags.sort((a, b) => (semverGt(a, b) ? -1 : 1));
-    const latest = sorted[0] ?? null;
-    const hasUpdate = latest ? semverGt(latest, CURRENT_VERSION) : false;
-    return { current: CURRENT_VERSION, latest, hasUpdate };
+    const hasUpdate = semverGt(tag, CURRENT_VERSION);
+    return { current: CURRENT_VERSION, latest: tag, hasUpdate };
   } catch {
     return { current: CURRENT_VERSION, latest: null, hasUpdate: false };
   }

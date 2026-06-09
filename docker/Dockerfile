@@ -6,6 +6,9 @@
 FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS builder
 WORKDIR /app
 
+ARG APP_VERSION
+ENV NEXT_PUBLIC_APP_VERSION=$APP_VERSION
+
 RUN corepack enable
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./

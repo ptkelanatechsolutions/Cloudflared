@@ -5,6 +5,7 @@ services:
       dockerfile: docker/Dockerfile
       args:
         CLOUDFLARED_VERSION: ${CLOUDFLARED_VERSION:-latest}
+        APP_VERSION: ${APP_VERSION:-0.0.0-dev}
     image: cloudflared-web:latest
     container_name: cloudflared-web
     restart: unless-stopped
