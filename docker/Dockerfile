@@ -17,14 +17,13 @@ COPY . .
 RUN pnpm --filter @cloudflared/web build
 
 # ---------- Cloudflared downloader ----------
-# NOT pinned to $BUILDPLATFORM: this stage reads TARGET* ARGs, and a
-# BUILDPLATFORM-pinned stage gets its TARGET* values cross-contaminated by
-# buildkit (e.g. amd64 target receiving TARGETVARIANT=v7). Running per-target
-# keeps TARGET* correct; the cost is only a curl under light emulation.
+# Predefined platform ARGs MUST be declared without defaults — a default value
+# shadows buildkit's automatic per-target value, leaving TARGETARCH stuck at
+# "amd64" and breaking the arm/v7 build (case string "linux/amd64/v7").
 FROM debian:bookworm-slim AS cloudflared-downloader
 
-ARG TARGETOS=linux
-ARG TARGETARCH=amd64
+ARG TARGETOS
+ARG TARGETARCH
 ARG TARGETVARIANT
 ARG CLOUDFLARED_VERSION=2026.6.0
 
