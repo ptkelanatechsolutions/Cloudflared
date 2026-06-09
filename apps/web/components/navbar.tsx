@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { CloudflareIcon, GithubIcon } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { VersionNotification } from "@/components/version-notification";
 
 const EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
 const REPO_URL = "https://github.com/ptkelanatechsolutions/Cloudflared";
@@ -23,7 +24,10 @@ export function Navbar() {
       {/* Brand */}
       <div className="flex items-center gap-2">
         <CloudflareIcon size={20} />
-        <span className="text-sm font-semibold tracking-tight text-foreground">Cloudflared</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-semibold tracking-tight text-foreground">Cloudflared</span>
+          <VersionNotification />
+        </div>
       </div>
 
       {/* Actions */}
