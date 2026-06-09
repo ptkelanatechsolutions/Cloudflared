@@ -6,7 +6,7 @@
 
 <img src="https://img.shields.io/github/actions/workflow/status/ptkelanatechsolutions/Cloudflared/code-quality.yml?branch=main&label=code%20quality&style=flat-square" alt="Code Quality" />
 <img src="https://img.shields.io/github/actions/workflow/status/ptkelanatechsolutions/Cloudflared/container.yml?label=container&style=flat-square" alt="Container" />
-<img src="https://img.shields.io/github/v/release/ptkelanatechsolutions/Cloudflared?label=release&style=flat-square" alt="Latest Release" />
+<img src="https://img.shields.io/badge/dynamic/json?url=https://api.github.com/repos/ptkelanatechsolutions/Cloudflared/releases/latest&query=%24.tag_name&label=release&color=blue&style=flat-square" alt="Latest Release" />
 <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" />
 <img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square" alt="Next.js" />
 <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=flat-square" alt="TypeScript" />
@@ -71,7 +71,7 @@ ghcr.io/ptkelanatechsolutions/cloudflared
 Recommended stable tag:
 
 ```text
-ghcr.io/ptkelanatechsolutions/cloudflared:1.0.1
+ghcr.io/ptkelanatechsolutions/cloudflared:1.1.5
 ```
 
 Latest tag:
