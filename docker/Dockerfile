@@ -6,67 +6,66 @@ WORKDIR /app
 
 RUN corepack enable
 
-# Install dependencies first to leverage Docker layer caching.
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY packages/core/package.json ./packages/core/package.json
 RUN pnpm install --frozen-lockfile
 
-# Build the standalone Next.js output.
 COPY . .
 RUN pnpm --filter @cloudflared/web build
 
-# ---------- Runner ----------
-FROM node:22-bookworm-slim AS runner
-WORKDIR /app
+# ---------- Cloudflared downloader ----------
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS cloudflared-downloader
 
-# Provided automatically by buildx for multi-arch builds.
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
 ARG TARGETVARIANT
+ARG CLOUDFLARED_VERSION=2026.6.0
 
-# Pin a cloudflared release, for example 2026.1.1, or keep "latest".
-ARG CLOUDFLARED_VERSION=latest
-
-# Install the cloudflared binary for the target Linux architecture.
 RUN set -eux; \
   apt-get update; \
   apt-get install -y --no-install-recommends ca-certificates curl; \
   case "${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" in \
     linux/amd64) \
-      CF_BIN="cloudflared-linux-amd64" ;; \
+      CLOUDFLARED_BIN="cloudflared-linux-amd64" ;; \
     linux/arm64) \
-      CF_BIN="cloudflared-linux-arm64" ;; \
+      CLOUDFLARED_BIN="cloudflared-linux-arm64" ;; \
     linux/arm/v7) \
-      CF_BIN="cloudflared-linux-armhf" ;; \
+      CLOUDFLARED_BIN="cloudflared-linux-armhf" ;; \
     *) \
       echo "Unsupported platform: ${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}"; \
       exit 1 ;; \
   esac; \
-  if [ "$CLOUDFLARED_VERSION" = "latest" ]; then \
-    CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/${CF_BIN}"; \
-  else \
-    CF_URL="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${CF_BIN}"; \
-  fi; \
+  CLOUDFLARED_URL="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${CLOUDFLARED_BIN}"; \
   echo "Target platform: ${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}"; \
-  echo "Downloading cloudflared from: ${CF_URL}"; \
-  curl -fL --retry 3 --retry-delay 5 -o /usr/local/bin/cloudflared "$CF_URL"; \
-  chmod +x /usr/local/bin/cloudflared; \
-  test -s /usr/local/bin/cloudflared; \
+  echo "Cloudflared version: ${CLOUDFLARED_VERSION}"; \
+  echo "Downloading cloudflared from: ${CLOUDFLARED_URL}"; \
+  curl -fL --retry 5 --retry-delay 5 -o /cloudflared "${CLOUDFLARED_URL}"; \
+  chmod +x /cloudflared; \
+  test -s /cloudflared; \
   rm -rf /var/lib/apt/lists/*
+
+# ---------- Runner ----------
+FROM node:22-bookworm-slim AS runner
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
     WEBUI_PORT=23899 \
     WEBUI_HOST=0.0.0.0 \
     CONFIG_DIR=/config
 
-# Copy the standalone server. With outputFileTracingRoot set to the repo root,
-# the bundle mirrors the monorepo layout (apps/web/server.js, packages/, node_modules/).
+COPY --from=cloudflared-downloader /cloudflared /usr/local/bin/cloudflared
+
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+
+RUN chmod +x /usr/local/bin/cloudflared /entrypoint.sh
 
 VOLUME ["/config"]
 EXPOSE 23899

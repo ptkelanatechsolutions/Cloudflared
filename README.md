@@ -226,14 +226,14 @@ http://localhost:23899
 The Dockerfile is located at:
 
 ```text
-docker/Dockerfile.web
+docker/Dockerfile
 ```
 
 Build locally:
 
 ```bash
 docker build \
-  -f docker/Dockerfile.web \
+  -f docker/Dockerfile \
   -t cloudflared-web:local .
 ```
 
@@ -268,7 +268,7 @@ Example:
 
 ```bash
 docker build \
-  -f docker/Dockerfile.web \
+  -f docker/Dockerfile \
   --build-arg CLOUDFLARED_VERSION=latest \
   -t cloudflared-web:local .
 ```
@@ -367,7 +367,7 @@ Cloudflared/
 │           ├── schema/
 │           └── index.ts
 ├── docker/
-│   ├── Dockerfile.web
+│   ├── Dockerfile
 │   ├── docker-compose.yml
 │   └── entrypoint.sh
 ├── .github/
