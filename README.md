@@ -409,7 +409,6 @@ Published image tags include:
 
 ```text
 ghcr.io/ptkelanatechsolutions/cloudflared:1.0.0
-ghcr.io/ptkelanatechsolutions/cloudflared:1.0
 ghcr.io/ptkelanatechsolutions/cloudflared:latest
 ```
 

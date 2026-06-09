@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Builder ----------
-FROM node:22-bookworm-slim AS builder
+# Pinned to the build platform so the heavy Next.js build runs natively
+# (not under QEMU). The standalone output is pure JS, portable across arches.
+FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS builder
 WORKDIR /app
 
 RUN corepack enable
@@ -15,7 +17,11 @@ COPY . .
 RUN pnpm --filter @cloudflared/web build
 
 # ---------- Cloudflared downloader ----------
-FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS cloudflared-downloader
+# NOT pinned to $BUILDPLATFORM: this stage reads TARGET* ARGs, and a
+# BUILDPLATFORM-pinned stage gets its TARGET* values cross-contaminated by
+# buildkit (e.g. amd64 target receiving TARGETVARIANT=v7). Running per-target
+# keeps TARGET* correct; the cost is only a curl under light emulation.
+FROM debian:bookworm-slim AS cloudflared-downloader
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
