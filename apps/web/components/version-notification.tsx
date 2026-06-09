@@ -88,7 +88,7 @@ function PulseDot() {
   return (
     <span className="flex size-1.5" aria-hidden="true">
       <motion.span
-        className="bg-update inline-flex size-1.5 rounded-full"
+        className="inline-flex size-1.5 rounded-full bg-update"
         animate={{ scale: [1, 1.7, 1], opacity: [1, 0.6, 1] }}
         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
       />
