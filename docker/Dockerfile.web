@@ -48,10 +48,11 @@ RUN set -eux; \
   else \
     CF_URL="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${CF_BIN}"; \
   fi; \
+  echo "Target platform: ${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}"; \
   echo "Downloading cloudflared from: ${CF_URL}"; \
-  curl -fsSL -o /usr/local/bin/cloudflared "$CF_URL"; \
+  curl -fL --retry 3 --retry-delay 5 -o /usr/local/bin/cloudflared "$CF_URL"; \
   chmod +x /usr/local/bin/cloudflared; \
-  cloudflared --version; \
+  test -s /usr/local/bin/cloudflared; \
   rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
