@@ -34,24 +34,25 @@ RUN set -eux; \
   apt-get install -y --no-install-recommends ca-certificates curl; \
   case "${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" in \
     linux/amd64) \
-      CF_PKG="cloudflared-linux-amd64.deb" ;; \
+      CF_BIN="cloudflared-linux-amd64" ;; \
     linux/arm64) \
-      CF_PKG="cloudflared-linux-arm64.deb" ;; \
+      CF_BIN="cloudflared-linux-arm64" ;; \
     linux/arm/v7) \
-      CF_PKG="cloudflared-linux-armhf.deb" ;; \
+      CF_BIN="cloudflared-linux-armhf" ;; \
     *) \
       echo "Unsupported platform: ${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}"; \
       exit 1 ;; \
   esac; \
   if [ "$CLOUDFLARED_VERSION" = "latest" ]; then \
-    CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/${CF_PKG}"; \
+    CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/${CF_BIN}"; \
   else \
-    CF_URL="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${CF_PKG}"; \
+    CF_URL="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${CF_BIN}"; \
   fi; \
-  curl -fsSL -o /tmp/cloudflared.deb "$CF_URL"; \
-  dpkg -i /tmp/cloudflared.deb; \
+  echo "Downloading cloudflared from: ${CF_URL}"; \
+  curl -fsSL -o /usr/local/bin/cloudflared "$CF_URL"; \
+  chmod +x /usr/local/bin/cloudflared; \
   cloudflared --version; \
-  rm -rf /tmp/cloudflared.deb /var/lib/apt/lists/*
+  rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
     WEBUI_PORT=23899 \
