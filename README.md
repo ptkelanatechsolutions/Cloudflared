@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/cloudflare.png" width="100" alt="Cloudflare Logo">
+<img src="./apps/web/public/cloudflare.png" width="150" alt="Cloudflare Logo">
 
 # **Cloudflared**
 
