@@ -12,12 +12,18 @@ const CONFIG_FILE = join(CONFIG_DIR, "config.json");
  */
 export class ConfigStore {
   async read(): Promise<AppConfig> {
+    let raw: string;
     try {
-      const raw = await readFile(CONFIG_FILE, "utf8");
-      return appConfigSchema.parse(JSON.parse(raw));
+      raw = await readFile(CONFIG_FILE, "utf8");
     } catch (err) {
       if (isNotFound(err)) return appConfigSchema.parse({});
-      throw err;
+      throw err; // genuine I/O error (e.g. permissions) — surface it
+    }
+    try {
+      return appConfigSchema.parse(JSON.parse(raw));
+    } catch {
+      // Corrupt JSON or schema mismatch — fall back to defaults so the UI boots.
+      return appConfigSchema.parse({});
     }
   }
 

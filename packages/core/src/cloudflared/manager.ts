@@ -47,7 +47,9 @@ export class CloudflaredManager {
   }
 
   start(token: string, settings: TunnelSettings): TunnelStatus {
-    if (this.isRunning()) return this.status();
+    // `child` stays non-null through starting/running/stopping, so this also
+    // blocks a restart while a previous process is still shutting down.
+    if (this.child || this.isRunning()) return this.status();
 
     if (!token) {
       this.state = "error";
@@ -123,11 +125,15 @@ export class CloudflaredManager {
 
 /** Translate stored settings into `cloudflared tunnel run` CLI arguments. */
 function buildArgs(token: string, settings: TunnelSettings): string[] {
-  const args = ["tunnel", "run"];
+  const args: string[] = [];
+  // --metrics is a top-level cloudflared flag and must precede the subcommand.
+  if (settings.metricsEnabled) {
+    args.push("--metrics", `0.0.0.0:${settings.metricsPort}`);
+  }
+  args.push("tunnel", "run");
   if (settings.protocol !== "auto") args.push("--protocol", settings.protocol);
   if (settings.region === "us") args.push("--region", "us");
   if (settings.edgeIpVersion !== "auto") args.push("--edge-ip-version", settings.edgeIpVersion);
-  if (settings.metricsEnabled) args.push("--metrics", `0.0.0.0:${settings.metricsPort}`);
   args.push("--token", token);
   return args;
 }

@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, Cloud, KeyRound, Loader2, Power, Settings } from "lucide-react";
+import { ArrowUpRight, KeyRound, Loader2, Power, Settings } from "lucide-react";
 import { getState, saveSettings, saveToken, startTunnel, stopTunnel } from "@/app/actions";
 import type { DashboardState } from "@/lib/dashboard";
 import type { TunnelSettings, TunnelState } from "@cloudflared/core";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { CloudflareIcon } from "./logo";
 
 const EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
 const POLL_MS = 3000;
@@ -105,8 +106,8 @@ export function TunnelControl({ initial }: { initial: DashboardState }) {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Cloud className="size-4" />
+              <div className="flex size-9 items-center justify-center rounded-lg">
+                <CloudflareIcon size={40} />
               </div>
               <div className="leading-tight">
                 <p className="text-[10px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
