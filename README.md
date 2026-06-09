@@ -5,6 +5,7 @@
 # **Cloudflared**
 
 <img src="https://img.shields.io/github/actions/workflow/status/ptkelanatechsolutions/Cloudflared/code-quality.yml?branch=main&label=code%20quality&style=flat-square" alt="Code Quality" />
+<img src="https://img.shields.io/github/actions/workflow/status/ptkelanatechsolutions/Cloudflared/container.yml?label=container&style=flat-square" alt="Container" />
 <img src="https://img.shields.io/github/v/release/ptkelanatechsolutions/Cloudflared?label=release&style=flat-square" alt="Latest Release" />
 <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License" />
 <img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square" alt="Next.js" />
@@ -41,16 +42,17 @@ The application runs as a Docker container and stores persistent configuration i
 - Production-ready Next.js standalone output.
 - Docker-first deployment for home servers.
 - GitHub Container Registry image publishing.
+- Multi-architecture Linux container support.
 - Code quality workflow for Prettier, ESLint, and TypeScript checks.
 
 ## Requirements
 
 For Docker deployment:
 
-- Linux home server, VPS, NAS, or any Docker-capable machine.
 - Docker Engine.
 - Docker Compose.
 - A Cloudflare Tunnel token.
+- A Linux home server, VPS, NAS, or any Docker-capable machine.
 
 For local development:
 
@@ -58,24 +60,97 @@ For local development:
 - pnpm 11.5.0.
 - Git.
 
+## Container Image
+
+Official container image:
+
+```text
+ghcr.io/ptkelanatechsolutions/cloudflared
+```
+
+Recommended stable tag:
+
+```text
+ghcr.io/ptkelanatechsolutions/cloudflared:1.0.1
+```
+
+Latest tag:
+
+```text
+ghcr.io/ptkelanatechsolutions/cloudflared:latest
+```
+
+Pull the latest image:
+
+```bash
+docker pull ghcr.io/ptkelanatechsolutions/cloudflared:latest
+```
+
+## Supported Platforms
+
+### Container Platforms
+
+The official container image supports Linux containers.
+
+| Platform       | Status    | Notes                                                                              |
+| -------------- | --------- | ---------------------------------------------------------------------------------- |
+| `linux/amd64`  | Supported | Intel/AMD 64-bit servers, VPS, mini PCs, and most home servers.                    |
+| `linux/arm64`  | Supported | ARM64 servers, Raspberry Pi 4/5 64-bit, ARM VPS, and Apple Silicon Docker Desktop. |
+| `linux/arm/v7` | Supported | 32-bit ARMv7 devices such as Raspberry Pi OS 32-bit.                               |
+
+### Host Systems
+
+| Host    | Status                                        | Notes                                        |
+| ------- | --------------------------------------------- | -------------------------------------------- |
+| Linux   | Recommended                                   | Best target for home server deployments.     |
+| Windows | Supported via Docker Desktop Linux containers | Native Windows containers are not supported. |
+| macOS   | Supported via Docker Desktop Linux containers | Native macOS containers are not supported.   |
+
+### Not Supported
+
+- Native Windows containers.
+- Native macOS containers.
+- `linux/386`.
+- `linux/arm/v6`.
+
 ## Quick Start
 
 ### Docker Compose
 
-The Docker Compose file is located at:
+Create a `docker-compose.yml` file:
 
-```text
-docker/docker-compose.yml
+```yaml
+services:
+  cloudflared-web:
+    image: ghcr.io/ptkelanatechsolutions/cloudflared:latest
+    container_name: cloudflared-web
+    restart: unless-stopped
+
+    # Recommended for Linux home server deployments.
+    # Do not use "ports" together with "network_mode: host".
+    network_mode: host
+
+    environment:
+      NODE_ENV: production
+      WEBUI_PORT: 23899
+      WEBUI_HOST: 0.0.0.0
+      CONFIG_DIR: /config
+
+    volumes:
+      - cloudflared-config:/config
+
+volumes:
+  cloudflared-config:
+    name: cloudflared-config
 ```
 
-From the repository root:
+Start the container:
 
 ```bash
-cd docker
-docker compose up -d --build
+docker compose up -d
 ```
 
-By default, the Web UI listens on:
+Open the Web UI:
 
 ```text
 http://SERVER_IP:23899
@@ -106,22 +181,9 @@ http://SERVER_IP:23899
 
 ## Docker Desktop Notes
 
-The default Compose file uses host networking, which is intended for Linux home server deployments.
+The default Compose example uses host networking, which is intended for Linux home server deployments.
 
-If you are using Docker Desktop, remove:
-
-```yaml
-network_mode: host
-```
-
-Then use port mapping instead:
-
-```yaml
-ports:
-  - "23899:23899"
-```
-
-Example:
+If you are using Docker Desktop or an environment where host networking is not suitable, use port mapping instead.
 
 ```yaml
 services:
@@ -129,17 +191,61 @@ services:
     image: ghcr.io/ptkelanatechsolutions/cloudflared:latest
     container_name: cloudflared-web
     restart: unless-stopped
+
     ports:
       - "23899:23899"
+
     environment:
+      NODE_ENV: production
       WEBUI_PORT: 23899
       WEBUI_HOST: 0.0.0.0
       CONFIG_DIR: /config
+
     volumes:
       - cloudflared-config:/config
 
 volumes:
   cloudflared-config:
+    name: cloudflared-config
+```
+
+Start the container:
+
+```bash
+docker compose up -d
+```
+
+Open:
+
+```text
+http://localhost:23899
+```
+
+## Build From Source
+
+The Dockerfile is located at:
+
+```text
+docker/Dockerfile.web
+```
+
+Build locally:
+
+```bash
+docker build \
+  -f docker/Dockerfile.web \
+  -t cloudflared-web:local .
+```
+
+Run the local image:
+
+```bash
+docker run -d \
+  --name cloudflared-web \
+  --network host \
+  -v cloudflared-config:/config \
+  --restart unless-stopped \
+  cloudflared-web:local
 ```
 
 ## Environment Variables
@@ -273,6 +379,51 @@ Cloudflared/
 └── pnpm-workspace.yaml
 ```
 
+## CI/CD
+
+This repository includes two GitHub Actions workflows.
+
+### Code Quality
+
+Runs formatting, linting, and type checking.
+
+Checks:
+
+- Prettier.
+- ESLint.
+- TypeScript.
+
+### Container
+
+Builds and publishes the Docker image to GitHub Container Registry.
+
+The workflow runs when a SemVer tag without the `v` prefix is pushed:
+
+```text
+1.0.0
+1.0.1
+1.1.0
+```
+
+Published image tags include:
+
+```text
+ghcr.io/ptkelanatechsolutions/cloudflared:1.0.0
+ghcr.io/ptkelanatechsolutions/cloudflared:1.0
+ghcr.io/ptkelanatechsolutions/cloudflared:latest
+```
+
+## Release
+
+Create a version tag without the `v` prefix:
+
+```bash
+git tag 1.0.0
+git push origin 1.0.0
+```
+
+The container workflow will build and publish the image automatically.
+
 ## Security Notes
 
 - Keep your Cloudflare Tunnel token private.
@@ -285,4 +436,4 @@ Cloudflared/
 
 This project is licensed under the MIT License.
 
-See the `LICENSE` file for details.
+See the [`LICENSE`](./LICENSE) file for details.

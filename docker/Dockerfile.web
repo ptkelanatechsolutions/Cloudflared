@@ -24,25 +24,34 @@ WORKDIR /app
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
 ARG TARGETVARIANT
-# Pin a cloudflared release (e.g. 2025.1.0), or keep "latest".
+
+# Pin a cloudflared release, for example 2026.1.1, or keep "latest".
 ARG CLOUDFLARED_VERSION=latest
 
-# Install the cloudflared binary for the target architecture.
-RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl \
- && if [ "$TARGETVARIANT" = "v7" ]; then \
-      CF_PKG="cloudflared-${TARGETOS}-${TARGETARCH}hf.deb"; \
-    else \
-      CF_PKG="cloudflared-${TARGETOS}-${TARGETARCH}.deb"; \
-    fi \
- && if [ "$CLOUDFLARED_VERSION" = "latest" ]; then \
-      CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/${CF_PKG}"; \
-    else \
-      CF_URL="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${CF_PKG}"; \
-    fi \
- && curl -fsSL -o /tmp/cloudflared.deb "$CF_URL" \
- && dpkg -i /tmp/cloudflared.deb \
- && rm -rf /tmp/cloudflared.deb /var/lib/apt/lists/*
+# Install the cloudflared binary for the target Linux architecture.
+RUN set -eux; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends ca-certificates curl; \
+  case "${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}" in \
+    linux/amd64) \
+      CF_PKG="cloudflared-linux-amd64.deb" ;; \
+    linux/arm64) \
+      CF_PKG="cloudflared-linux-arm64.deb" ;; \
+    linux/arm/v7) \
+      CF_PKG="cloudflared-linux-armhf.deb" ;; \
+    *) \
+      echo "Unsupported platform: ${TARGETOS}/${TARGETARCH}${TARGETVARIANT:+/${TARGETVARIANT}}"; \
+      exit 1 ;; \
+  esac; \
+  if [ "$CLOUDFLARED_VERSION" = "latest" ]; then \
+    CF_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/${CF_PKG}"; \
+  else \
+    CF_URL="https://github.com/cloudflare/cloudflared/releases/download/${CLOUDFLARED_VERSION}/${CF_PKG}"; \
+  fi; \
+  curl -fsSL -o /tmp/cloudflared.deb "$CF_URL"; \
+  dpkg -i /tmp/cloudflared.deb; \
+  cloudflared --version; \
+  rm -rf /tmp/cloudflared.deb /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
     WEBUI_PORT=23899 \
