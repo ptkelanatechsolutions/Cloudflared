@@ -1,25 +1,43 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { CloudflareIcon, GithubIcon } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { VersionNotification } from "@/components/version-notification";
+import { cn } from "@/lib/utils";
 
 const EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
 const REPO_URL = "https://github.com/ptkelanatechsolutions/Cloudflared";
 
 /**
- * Floating "island" navbar: a glass pill detached from the top edge, aligned to
- * the dashboard card width. Token-only colors; brand logo + Repository link +
- * theme switch.
+ * Floating "island" navbar: glass effect intensifies on scroll, always visible.
  */
 export function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (!main) return;
+
+    const handleScroll = () => {
+      setScrolled(main.scrollTop > 40);
+    };
+
+    main.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => main.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <motion.nav
       initial={{ y: -18, opacity: 0, filter: "blur(8px)" }}
       animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
       transition={{ duration: 0.65, ease: EASE }}
-      className="sticky top-0 z-50 mx-auto mt-6 flex w-full max-w-[88rem] items-center justify-between gap-2 rounded-full border border-border bg-card/70 p-1.5 pl-4 shadow-sm backdrop-blur-xl"
+      className={cn(
+        "sticky top-5 z-50 mt-6 flex w-full items-center justify-between gap-2 rounded-full border p-1.5 pl-4 shadow-sm backdrop-blur-xl transition-[border-color,box-shadow,background-color] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        scrolled ? "border-border/80 bg-card/85 shadow-md" : "border-border bg-card/70 shadow-sm",
+      )}
     >
       {/* Brand */}
       <div className="flex items-center gap-2">
