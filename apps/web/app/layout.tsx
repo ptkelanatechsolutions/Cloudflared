@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cloudflared — Tunnel Control",
+  title: "Cloudflared | Tunnel Control",
   description: "Self-hosted control panel for your Cloudflare tunnel.",
 };
 

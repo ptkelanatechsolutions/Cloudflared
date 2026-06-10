@@ -27,6 +27,7 @@ export class CloudflaredManager {
   private exitCode: number | null = null;
   private lastError: string | null = null;
   private logs: string[] = [];
+  private pendingRestart: { token: string; settings: TunnelSettings } | null = null;
 
   status(): TunnelStatus {
     return {
@@ -77,6 +78,7 @@ export class CloudflaredManager {
       });
 
       child.on("error", (err) => {
+        this.pendingRestart = null;
         this.state = "error";
         this.lastError = err.message;
         this.child = null;
@@ -85,6 +87,15 @@ export class CloudflaredManager {
       child.on("exit", (code, signal) => {
         this.exitCode = code;
         this.child = null;
+        const restart = this.pendingRestart;
+        this.pendingRestart = null;
+
+        if (restart) {
+          this.state = "stopped";
+          this.start(restart.token, restart.settings);
+          return;
+        }
+
         if (this.state === "stopping" || code === 0) {
           this.state = "stopped";
         } else {
@@ -102,11 +113,32 @@ export class CloudflaredManager {
   }
 
   stop(): TunnelStatus {
+    this.pendingRestart = null;
     if (this.child) {
       this.state = "stopping";
       this.child.kill("SIGTERM");
     } else {
       this.state = "stopped";
+    }
+    return this.status();
+  }
+
+  restart(token: string, settings: TunnelSettings): TunnelStatus {
+    if (!token) {
+      this.pendingRestart = null;
+      this.state = "error";
+      this.lastError = "Tunnel token is empty.";
+      return this.status();
+    }
+
+    if (!this.child) {
+      return this.start(token, settings);
+    }
+
+    this.pendingRestart = { token, settings };
+    if (this.state !== "stopping") {
+      this.state = "stopping";
+      this.child.kill("SIGTERM");
     }
     return this.status();
   }

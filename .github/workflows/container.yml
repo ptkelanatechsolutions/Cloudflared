@@ -51,7 +51,7 @@ jobs:
             org.opencontainers.image.description=Cloudflared Web UI
             org.opencontainers.image.licenses=MIT
 
-      - name: Build and push container image
+      - name: Build and push multi-arch container image
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -60,5 +60,44 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
+
+      - name: Build and push amd64 container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-amd64
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
+
+      - name: Build and push arm64 container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          platforms: linux/arm64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-arm64
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
+
+      - name: Build and push armv7 container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          platforms: linux/arm/v7
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-armv7
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: false
           build-args: |
             APP_VERSION=${{ github.ref_name }}

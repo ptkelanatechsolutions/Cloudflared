@@ -14,6 +14,7 @@ async function snapshot(): Promise<DashboardState> {
     status: cloudflaredManager.status(),
     settings: config.settings,
     tokenSet: config.token.length > 0,
+    logs: cloudflaredManager.getLogs(),
   };
 }
 
@@ -40,6 +41,19 @@ export async function startTunnel(): Promise<DashboardState> {
 
 export async function stopTunnel(): Promise<DashboardState> {
   cloudflaredManager.stop();
+  return snapshot();
+}
+
+export async function restartTunnel(): Promise<DashboardState> {
+  const config = await configStore.read();
+  cloudflaredManager.restart(config.token, config.settings);
+  return snapshot();
+}
+
+export async function saveSettingsAndRestart(input: TunnelSettings): Promise<DashboardState> {
+  const settings = tunnelSettingsSchema.parse(input);
+  const config = await configStore.update({ settings });
+  cloudflaredManager.restart(config.token, config.settings);
   return snapshot();
 }
 

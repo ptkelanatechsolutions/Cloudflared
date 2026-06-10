@@ -260,16 +260,16 @@ docker run -d \
 
 ## Build Arguments
 
-| Argument              | Default  | Description                                                                                           |
-| --------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
-| `CLOUDFLARED_VERSION` | `latest` | Cloudflared release version installed into the image. Use a specific version for reproducible builds. |
+| Argument              | Default    | Description                                                                                           |
+| --------------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARED_VERSION` | `2026.6.0` | Cloudflared release version installed into the image. Use a specific version for reproducible builds. |
 
 Example:
 
 ```bash
 docker build \
   -f docker/Dockerfile \
-  --build-arg CLOUDFLARED_VERSION=latest \
+  --build-arg CLOUDFLARED_VERSION=2026.6.0 \
   -t cloudflared-web:local .
 ```
 

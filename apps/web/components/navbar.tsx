@@ -19,7 +19,7 @@ export function Navbar() {
       initial={{ y: -18, opacity: 0, filter: "blur(8px)" }}
       animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
       transition={{ duration: 0.65, ease: EASE }}
-      className="mx-auto mt-6 flex w-full max-w-md items-center justify-between gap-2 rounded-full border border-border bg-card/70 p-1.5 pl-4 shadow-sm backdrop-blur-xl"
+      className="sticky top-0 z-50 mx-auto mt-6 flex w-full max-w-[88rem] items-center justify-between gap-2 rounded-full border border-border bg-card/70 p-1.5 pl-4 shadow-sm backdrop-blur-xl"
     >
       {/* Brand */}
       <div className="flex items-center gap-2">
