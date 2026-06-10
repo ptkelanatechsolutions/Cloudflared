@@ -1,6 +1,6 @@
 {
   "name": "cloudflared",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "A self-hosted dashboard for managing Cloudflared tunnels on a home server via Docker.",
   "license": "MIT",
@@ -35,7 +35,9 @@
     "lint": "pnpm --filter @cloudflared/web lint",
     "typecheck": "pnpm -r typecheck",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "bump": "node scripts/version.js",
+    "prepublish": "pnpm format && pnpm typecheck && pnpm lint && pnpm bump"
   },
   "devDependencies": {
     "prettier": "3.8.3",
