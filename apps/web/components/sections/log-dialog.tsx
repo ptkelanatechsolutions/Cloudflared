@@ -1,59 +1,82 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Loader2, Maximize2, Minus, ScrollText } from "lucide-react";
+import { ArrowDownToLine, Loader2, Maximize2, Minus, ScrollText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Eyebrow } from "@/components/eyebrow";
 import { cn } from "@/lib/utils";
-import { EASE } from "@/lib/tunnel";
+import { EASE, LOG_FOLLOW_THRESHOLD } from "@/lib/tunnel";
 import type { Tunnel } from "@/components/use-tunnel";
 
 const LOG_PREVIEW_LINES = 10;
+
+function getViewport(root: HTMLElement): HTMLElement | null {
+  return root.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]');
+}
 
 export function LogDialog({ t }: { t: Tunnel }) {
   const [open, setOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dialogScrollRef = useRef<HTMLDivElement>(null);
+  const [followLogs, setFollowLogs] = useState(true);
+
+  const scrollPreviewToBottom = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const viewport = getViewport(el);
+    if (viewport) viewport.scrollTop = viewport.scrollHeight;
+  }, []);
+
+  const scrollDialogToBottom = useCallback(() => {
+    const el = dialogScrollRef.current;
+    if (!el) return;
+    const viewport = getViewport(el);
+    if (viewport) viewport.scrollTop = viewport.scrollHeight;
+  }, []);
 
   useEffect(() => {
     if (t.logs.length > 0 && !open) {
-      const el = scrollRef.current;
-      if (el) {
-        requestAnimationFrame(() => {
-          el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-        });
-      }
+      requestAnimationFrame(scrollPreviewToBottom);
     }
-  }, [t.logs.length, open]);
+  }, [t.logs.length, open, scrollPreviewToBottom]);
 
   useEffect(() => {
-    if (open) {
-      const el = dialogScrollRef.current;
-      if (el) {
-        requestAnimationFrame(() => {
-          el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-        });
-      }
+    if (open && followLogs) {
+      requestAnimationFrame(scrollDialogToBottom);
     }
-  }, [open, t.logs.length]);
+  }, [open, followLogs, t.logs.length, scrollDialogToBottom]);
 
-  const previewLines = t.logs.slice(-LOG_PREVIEW_LINES);
+  useEffect(() => {
+    const el = dialogScrollRef.current;
+    if (!el) return;
+    const viewport = getViewport(el);
+    if (!viewport) return;
+
+    const handleScroll = () => {
+      const distance = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+      setFollowLogs(distance <= LOG_FOLLOW_THRESHOLD);
+    };
+
+    viewport.addEventListener("scroll", handleScroll, { passive: true });
+    return () => viewport.removeEventListener("scroll", handleScroll);
+  }, [open]);
+
+  const previewLines = t.logs.slice(0, LOG_PREVIEW_LINES);
   const overflowCount = t.logs.length - LOG_PREVIEW_LINES;
 
   return (
     <>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+          <span className="flex items-center gap-2 text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
             <ScrollText className="size-3.5" strokeWidth={1.8} />
             Event log
-          </Label>
+          </span>
           <Button
             variant="ghost"
             size="sm"
@@ -80,30 +103,30 @@ export function LogDialog({ t }: { t: Tunnel }) {
           )}
 
           {t.logs.length > 0 && (
-            <ScrollArea
-              ref={scrollRef}
-              className={cn(
-                "max-h-[17rem] overflow-y-auto rounded-[1.6rem] border border-border bg-muted/35",
-              )}
-            >
-              <div className="space-y-0.5 p-4 font-mono text-[13px] leading-6">
-                {previewLines.map((line, i) => (
-                  <motion.div
-                    key={`${i}-${line.slice(0, 24)}`}
-                    initial={{ opacity: 0, x: t.reducedMotion ? 0 : -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25, ease: EASE, delay: 0.03 * i }}
-                  >
-                    {line}
-                  </motion.div>
-                ))}
-              </div>
-            </ScrollArea>
+            <div ref={scrollRef}>
+              <ScrollArea
+                className={cn("max-h-[17rem] rounded-[1.6rem] border border-border bg-muted/35")}
+              >
+                <div className="space-y-0.5 p-4 font-mono text-[13px] leading-6">
+                  {previewLines.map((line, i) => (
+                    <motion.div
+                      key={`${i}-${line.slice(0, 24)}`}
+                      initial={{ opacity: 0, x: t.reducedMotion ? 0 : -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.25, ease: EASE, delay: 0.03 * i }}
+                    >
+                      {line}
+                    </motion.div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           )}
 
           <AnimatePresence>
             {overflowCount > 0 && (
               <motion.div
+                key="overflow-badge"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
@@ -131,30 +154,44 @@ export function LogDialog({ t }: { t: Tunnel }) {
           <DialogHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border px-6 py-4">
             <DialogTitle className="sr-only">Full event log</DialogTitle>
             <Eyebrow icon={ScrollText}>Full event log</Eyebrow>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setOpen(false)}
-              className="h-7 rounded-full px-2.5 text-[11px] text-muted-foreground"
-            >
-              <Minus className="size-3.5" strokeWidth={1.8} />
-              Minimize
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={t.handleExportLogs}
+                disabled={t.logs.length === 0}
+                className="h-7 rounded-full px-2.5 text-[11px] text-muted-foreground"
+              >
+                <ArrowDownToLine className="size-3.5" strokeWidth={1.8} />
+                Export
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setOpen(false)}
+                className="h-7 rounded-full px-2.5 text-[11px] text-muted-foreground"
+              >
+                <Minus className="size-3.5" strokeWidth={1.8} />
+                Minimize
+              </Button>
+            </div>
           </DialogHeader>
 
           <Separator />
 
-          <div className="flex-1 overflow-hidden p-0">
-            <ScrollArea ref={dialogScrollRef} className="h-full max-h-[55vh] overflow-y-auto">
-              <div className="space-y-0.5 p-6 font-mono text-[13px] leading-7">
-                {t.logs.length === 0 && (
-                  <p className="text-muted-foreground">No log entries yet.</p>
-                )}
-                {t.logs.map((line, i) => (
-                  <div key={`${i}-${line.slice(0, 24)}`}>{line}</div>
-                ))}
-              </div>
-            </ScrollArea>
+          <div className="flex flex-1 overflow-hidden p-0">
+            <div ref={dialogScrollRef} className="flex-1">
+              <ScrollArea className="h-full">
+                <div className="space-y-0.5 p-6 font-mono text-[13px] leading-7">
+                  {t.logs.length === 0 && (
+                    <p className="text-muted-foreground">No log entries yet.</p>
+                  )}
+                  {t.logs.map((line, i) => (
+                    <div key={`${i}-${line.slice(0, 24)}`}>{line}</div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
