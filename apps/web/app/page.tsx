@@ -8,10 +8,7 @@ export default async function Home() {
   const initial = await getState();
 
   return (
-    <main
-      id="main-content"
-      className="relative flex h-dvh flex-col overflow-y-auto"
-    >
+    <main id="main-content" className="relative flex h-dvh flex-col overflow-y-auto">
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0 opacity-80"
@@ -26,12 +23,7 @@ export default async function Home() {
           <TunnelControl initial={initial} />
         </div>
       </div>
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-        data-status-region
-      />
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-status-region />
     </main>
   );
 }

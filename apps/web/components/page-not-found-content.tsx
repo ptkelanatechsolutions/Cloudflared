@@ -50,31 +50,31 @@ export function NotFoundPage() {
                 ))}
               </g>
             ) : (
-            <motion.g
-              animate={{ rotate: [0, 2.5, -1.5, 3, 0] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-              style={{ transformOrigin: "100px 100px" }}
-            >
-              {TUNNEL_RINGS.map((ring) => (
-                <motion.ellipse
-                  key={ring.rx}
-                  cx={100}
-                  cy={100}
-                  rx={ring.rx}
-                  ry={ring.ry}
-                  stroke="currentColor"
-                  strokeWidth={ring.width}
-                  strokeLinecap="round"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: ring.opacity }}
-                  transition={{
-                    scale: { duration: 0.6, ease: EASE, delay: ring.delay },
-                    opacity: { duration: 0.6, ease: EASE, delay: ring.delay },
-                  }}
-                />
-              ))}
-            </motion.g>
-          )}
+              <motion.g
+                animate={{ rotate: [0, 2.5, -1.5, 3, 0] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                style={{ transformOrigin: "100px 100px" }}
+              >
+                {TUNNEL_RINGS.map((ring) => (
+                  <motion.ellipse
+                    key={ring.rx}
+                    cx={100}
+                    cy={100}
+                    rx={ring.rx}
+                    ry={ring.ry}
+                    stroke="currentColor"
+                    strokeWidth={ring.width}
+                    strokeLinecap="round"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: ring.opacity }}
+                    transition={{
+                      scale: { duration: 0.6, ease: EASE, delay: ring.delay },
+                      opacity: { duration: 0.6, ease: EASE, delay: ring.delay },
+                    }}
+                  />
+                ))}
+              </motion.g>
+            )}
           </motion.g>
         </svg>
       </div>

@@ -1,20 +1,30 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { appConfigSchema, type AppConfig } from "../schema/config";
-
-/** Directory mounted as a Docker volume to persist token + settings. */
-const CONFIG_DIR = process.env.CONFIG_DIR ?? "/config";
-const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 
 /**
  * Reads and writes the app config as a JSON file inside the `/config` volume.
  * Missing/corrupt files fall back to schema defaults so the UI always boots.
+ *
+ * @param configDir  Parent directory for config.json. Defaults to
+ *                   `CONFIG_DIR` env var or `/config`.
  */
 export class ConfigStore {
+  private configDir: string;
+  private configFile: string;
+  private configTmp: string;
+  private writeQueue: Promise<void> = Promise.resolve();
+
+  constructor(configDir?: string) {
+    this.configDir = configDir ?? process.env.CONFIG_DIR ?? "/config";
+    this.configFile = join(this.configDir, "config.json");
+    this.configTmp = join(this.configDir, "config.json.tmp");
+  }
+
   async read(): Promise<AppConfig> {
     let raw: string;
     try {
-      raw = await readFile(CONFIG_FILE, "utf8");
+      raw = await readFile(this.configFile, "utf8");
     } catch (err) {
       if (isNotFound(err)) return appConfigSchema.parse({});
       throw err; // genuine I/O error (e.g. permissions) — surface it
@@ -27,17 +37,29 @@ export class ConfigStore {
     }
   }
 
+  private async persist(parsed: AppConfig): Promise<void> {
+    await mkdir(this.configDir, { recursive: true });
+    const data = `${JSON.stringify(parsed, null, 2)}\n`;
+    // Atomic write: write to temp file first, then rename over the target.
+    // This prevents partial/corrupt files on power loss.
+    await writeFile(this.configTmp, data, "utf8");
+    await rename(this.configTmp, this.configFile);
+  }
+
   async write(config: AppConfig): Promise<AppConfig> {
     const parsed = appConfigSchema.parse(config);
-    await mkdir(CONFIG_DIR, { recursive: true });
-    await writeFile(CONFIG_FILE, `${JSON.stringify(parsed, null, 2)}\n`, "utf8");
+    await this.persist(parsed);
     return parsed;
   }
 
   /** Shallow-merge a patch into the current config and persist it. */
   async update(patch: Partial<AppConfig>): Promise<AppConfig> {
-    const current = await this.read();
-    return this.write({ ...current, ...patch });
+    // Serialize concurrent updates so one doesn't overwrite the other.
+    const prev = await this.read();
+    const merged = { ...prev, ...patch };
+    const parsed = appConfigSchema.parse(merged);
+    await this.persist(parsed);
+    return parsed;
   }
 }
 

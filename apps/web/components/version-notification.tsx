@@ -51,11 +51,7 @@ export function VersionNotification() {
   };
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={handleOpen}
-      onMouseLeave={handleClose}
-    >
+    <div className="relative" onMouseEnter={handleOpen} onMouseLeave={handleClose}>
       <button
         type="button"
         onFocus={handleOpen}

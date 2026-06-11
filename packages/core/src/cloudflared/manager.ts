@@ -8,12 +8,12 @@ export interface TunnelStatus {
   pid: number | null;
   startedAt: string | null;
   exitCode: number | null;
+  exitSignal: string | null;
   lastError: string | null;
 }
 
 const MAX_LOG_LINES = 500;
-/** Overridable for tests / non-standard installs; defaults to PATH lookup. */
-const CLOUDFLARED_BIN = process.env.CLOUDFLARED_BIN ?? "cloudflared";
+const SPAWN_TIMEOUT_MS = 30_000;
 
 /**
  * Owns the single long-lived `cloudflared` child process. Held as a
@@ -25,8 +25,11 @@ export class CloudflaredManager {
   private state: TunnelState = "stopped";
   private startedAt: string | null = null;
   private exitCode: number | null = null;
+  private exitSignal: string | null = null;
   private lastError: string | null = null;
   private logs: string[] = [];
+  private partialLine = "";
+  private spawnTimeoutId: ReturnType<typeof setTimeout> | undefined;
   private pendingRestart: { token: string; settings: TunnelSettings } | null = null;
 
   status(): TunnelStatus {
@@ -35,6 +38,7 @@ export class CloudflaredManager {
       pid: this.child?.pid ?? null,
       startedAt: this.startedAt,
       exitCode: this.exitCode,
+      exitSignal: this.exitSignal,
       lastError: this.lastError,
     };
   }
@@ -59,25 +63,42 @@ export class CloudflaredManager {
     }
 
     this.logs = [];
+    this.partialLine = "";
     this.exitCode = null;
+    this.exitSignal = null;
     this.lastError = null;
     this.state = "starting";
-    this.startedAt = new Date().toISOString();
 
     try {
-      const child = spawn(CLOUDFLARED_BIN, buildArgs(token, settings), {
+      const bin = process.env.CLOUDFLARED_BIN ?? "cloudflared";
+      const child = spawn(bin, buildArgs(settings), {
         stdio: ["ignore", "pipe", "pipe"],
+        env: { ...process.env, TUNNEL_TOKEN: token },
       });
       this.child = child;
 
       child.stdout?.on("data", (chunk: Buffer) => this.appendLog(chunk));
       child.stderr?.on("data", (chunk: Buffer) => this.appendLog(chunk));
 
+      this.spawnTimeoutId = setTimeout(() => {
+        if (this.state !== "starting") return;
+        this.state = "error";
+        this.lastError = "cloudflared failed to start within 30s";
+        this.child = null;
+        this.pendingRestart = null;
+        this.spawnTimeoutId = undefined;
+      }, SPAWN_TIMEOUT_MS);
+
       child.on("spawn", () => {
+        clearTimeout(this.spawnTimeoutId);
+        this.spawnTimeoutId = undefined;
+        this.startedAt = new Date().toISOString();
         if (this.state === "starting") this.state = "running";
       });
 
       child.on("error", (err) => {
+        clearTimeout(this.spawnTimeoutId);
+        this.spawnTimeoutId = undefined;
         this.pendingRestart = null;
         this.state = "error";
         this.lastError = err.message;
@@ -85,7 +106,10 @@ export class CloudflaredManager {
       });
 
       child.on("exit", (code, signal) => {
+        clearTimeout(this.spawnTimeoutId);
+        this.spawnTimeoutId = undefined;
         this.exitCode = code;
+        this.exitSignal = signal;
         this.child = null;
         const restart = this.pendingRestart;
         this.pendingRestart = null;
@@ -104,6 +128,8 @@ export class CloudflaredManager {
         }
       });
     } catch (err) {
+      clearTimeout(this.spawnTimeoutId);
+      this.spawnTimeoutId = undefined;
       this.state = "error";
       this.lastError = err instanceof Error ? err.message : String(err);
       this.child = null;
@@ -116,7 +142,13 @@ export class CloudflaredManager {
     this.pendingRestart = null;
     if (this.child) {
       this.state = "stopping";
-      this.child.kill("SIGTERM");
+      try {
+        this.child.kill("SIGTERM");
+      } catch {
+        // Process may have already exited — handle is stale on Windows.
+        this.state = "stopped";
+        this.child = null;
+      }
     } else {
       this.state = "stopped";
     }
@@ -138,17 +170,27 @@ export class CloudflaredManager {
     this.pendingRestart = { token, settings };
     if (this.state !== "stopping") {
       this.state = "stopping";
-      this.child.kill("SIGTERM");
+      try {
+        this.child.kill("SIGTERM");
+      } catch {
+        // child already exited — the exit handler will pick up pendingRestart
+        // after the error handler runs first.
+      }
     }
     return this.status();
   }
 
   private appendLog(chunk: Buffer): void {
-    const lines = chunk
-      .toString()
-      .split(/\r?\n/)
-      .filter((line) => line.length > 0);
-    this.logs.push(...lines);
+    const text = this.partialLine + chunk.toString();
+    const lines = text.split(/\r?\n/);
+    // The last element is either an empty string (text ended with \n) or
+    // an incomplete line fragment that belongs to the next chunk.
+    this.partialLine = lines.pop() ?? "";
+    for (const line of lines) {
+      if (line.length > 0) {
+        this.logs.push(line);
+      }
+    }
     if (this.logs.length > MAX_LOG_LINES) {
       this.logs = this.logs.slice(-MAX_LOG_LINES);
     }
@@ -156,7 +198,7 @@ export class CloudflaredManager {
 }
 
 /** Translate stored settings into `cloudflared tunnel run` CLI arguments. */
-function buildArgs(token: string, settings: TunnelSettings): string[] {
+export function buildArgs(settings: TunnelSettings): string[] {
   const args: string[] = [];
   // --metrics is a top-level cloudflared flag and must precede the subcommand.
   if (settings.metricsEnabled) {
@@ -166,7 +208,7 @@ function buildArgs(token: string, settings: TunnelSettings): string[] {
   if (settings.protocol !== "auto") args.push("--protocol", settings.protocol);
   if (settings.region === "us") args.push("--region", "us");
   if (settings.edgeIpVersion !== "auto") args.push("--edge-ip-version", settings.edgeIpVersion);
-  args.push("--token", token);
+  // Token is passed via TUNNEL_TOKEN env var in spawn() — never on the CLI.
   return args;
 }
 
