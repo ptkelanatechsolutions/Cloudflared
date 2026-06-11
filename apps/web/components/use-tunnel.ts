@@ -192,23 +192,35 @@ export function useTunnel(initial: DashboardState): Tunnel {
     if (!token) return;
 
     startMutation(async () => {
-      const next = await saveToken(token);
-      setState(next);
-      setTokenInput("");
+      try {
+        const next = await saveToken(token);
+        setState(next);
+        setTokenInput("");
+      } catch (err) {
+        console.error("[tunnel] saveToken failed:", err);
+      }
     });
   }
 
   function handleToggleTunnel() {
     startMutation(async () => {
-      const next = online ? await stopTunnel() : await startTunnel();
-      setState(next);
+      try {
+        const next = online ? await stopTunnel() : await startTunnel();
+        setState(next);
+      } catch (err) {
+        console.error("[tunnel] toggleTunnel failed:", err);
+      }
     });
   }
 
   function handleRestartTunnel() {
     startMutation(async () => {
-      const next = await restartTunnel();
-      setState(next);
+      try {
+        const next = await restartTunnel();
+        setState(next);
+      } catch (err) {
+        console.error("[tunnel] restartTunnel failed:", err);
+      }
     });
   }
 
@@ -216,11 +228,15 @@ export function useTunnel(initial: DashboardState): Tunnel {
     if (metricsPortInvalid) return;
 
     startMutation(async () => {
-      const next = await saveSettings(draftSettings);
-      setState(next);
-      setDraftSettings(next.settings);
-      setDraftMetricsPort(String(next.settings.metricsPort));
-      setIsEditingSettings(false);
+      try {
+        const next = await saveSettings(draftSettings);
+        setState(next);
+        setDraftSettings(next.settings);
+        setDraftMetricsPort(String(next.settings.metricsPort));
+        setIsEditingSettings(false);
+      } catch (err) {
+        console.error("[tunnel] saveSettings failed:", err);
+      }
     });
   }
 
@@ -228,11 +244,15 @@ export function useTunnel(initial: DashboardState): Tunnel {
     if (metricsPortInvalid) return;
 
     startMutation(async () => {
-      const next = await saveSettingsAndRestart(draftSettings);
-      setState(next);
-      setDraftSettings(next.settings);
-      setDraftMetricsPort(String(next.settings.metricsPort));
-      setIsEditingSettings(false);
+      try {
+        const next = await saveSettingsAndRestart(draftSettings);
+        setState(next);
+        setDraftSettings(next.settings);
+        setDraftMetricsPort(String(next.settings.metricsPort));
+        setIsEditingSettings(false);
+      } catch (err) {
+        console.error("[tunnel] saveAndRestart failed:", err);
+      }
     });
   }
 

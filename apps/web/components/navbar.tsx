@@ -54,6 +54,7 @@ export function Navbar() {
           href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Repository"
           whileTap={{ scale: 0.96 }}
           className="group/repo flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-accent hover:text-foreground"
         >

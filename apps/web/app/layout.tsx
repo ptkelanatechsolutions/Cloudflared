@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -31,8 +32,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex h-full min-h-full flex-col overflow-hidden">
+        <a
+          href="#main-content"
+          className="fixed top-2 left-2 z-[100] -translate-y-[200%] rounded-lg border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-transform focus-visible:translate-y-0"
+        >
+          Skip to content
+        </a>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -146,7 +146,7 @@ export function SettingsCard({ t }: { t: Tunnel }) {
                   </div>
                 </div>
                 {t.metricsPortInvalid && (
-                  <p className="text-xs leading-5 text-destructive">Port must be 1–65535.</p>
+                  <p role="alert" className="text-xs leading-5 text-destructive">Port must be 1–65535.</p>
                 )}
               </div>
             )}

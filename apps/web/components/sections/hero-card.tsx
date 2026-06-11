@@ -24,6 +24,7 @@ export function HeroCard({ t }: { t: Tunnel }) {
               <div className="flex items-center gap-3">
                 <PulseDot tone={t.meta.tone} />
                 <h1
+                  id="tunnel-status-label"
                   className={cn(
                     "font-mono text-4xl font-semibold tracking-tight sm:text-5xl",
                     TONE_TEXT[t.meta.tone],
@@ -35,6 +36,8 @@ export function HeroCard({ t }: { t: Tunnel }) {
               <AnimatePresence mode="wait">
                 <motion.p
                   key={t.subline}
+                  id="tunnel-status-desc"
+                  aria-describedby="tunnel-status-label"
                   initial={{ opacity: 0, y: t.reducedMotion ? 0 : 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: t.reducedMotion ? 0 : -10 }}

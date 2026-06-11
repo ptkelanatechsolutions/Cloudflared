@@ -57,7 +57,7 @@ export function ObservabilityCard({ t }: { t: Tunnel }) {
         </div>
 
         {t.status.lastError ? (
-          <div className="rounded-[1.5rem] border border-destructive/25 bg-destructive/10 p-4">
+          <div role="alert" className="rounded-[1.5rem] border border-destructive/25 bg-destructive/10 p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-destructive">
               <Activity className="size-4" strokeWidth={1.8} />
               Last error

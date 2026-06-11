@@ -1,16 +1,18 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Tone } from "@/lib/tunnel";
 import { TONE_DOT } from "@/lib/tunnel";
 
 export function PulseDot({ tone }: { tone: Tone }) {
   const color = TONE_DOT[tone];
+  const reducedMotion = useReducedMotion();
 
   return (
     <span className="relative flex size-3">
-      {tone === "active" ? (
+      {tone === "active" && !reducedMotion ? (
         <motion.span
           className={cn("absolute inline-flex size-full rounded-full", color)}
           animate={{ scale: [1, 2.3], opacity: [0.5, 0] }}

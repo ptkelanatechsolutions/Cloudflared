@@ -107,10 +107,10 @@ export function LogDialog({ t }: { t: Tunnel }) {
               <ScrollArea
                 className={cn("max-h-[17rem] rounded-[1.6rem] border border-border bg-muted/35")}
               >
-                <div className="space-y-0.5 p-4 font-mono text-[13px] leading-6">
+                <div role="log" className="space-y-0.5 p-4 font-mono text-[13px] leading-6">
                   {previewLines.map((line, i) => (
                     <motion.div
-                      key={`${i}-${line.slice(0, 24)}`}
+                      key={`${i}-${line}`}
                       initial={{ opacity: 0, x: t.reducedMotion ? 0 : -8 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.25, ease: EASE, delay: 0.03 * i }}
@@ -187,7 +187,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
                     <p className="text-muted-foreground">No log entries yet.</p>
                   )}
                   {t.logs.map((line, i) => (
-                    <div key={`${i}-${line.slice(0, 24)}`}>{line}</div>
+                    <div key={`${i}-${line}`}>{line}</div>
                   ))}
                 </div>
               </ScrollArea>

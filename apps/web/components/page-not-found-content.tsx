@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,8 @@ const TUNNEL_RINGS = [
 ] as const;
 
 export function NotFoundPage() {
+  const reducedMotion = useReducedMotion();
+
   return (
     <main className="flex h-dvh flex-col items-center justify-center gap-8 overflow-hidden px-6">
       {/* Animated tunnel SVG */}
@@ -30,6 +33,23 @@ export function NotFoundPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: EASE }}
           >
+            {reducedMotion ? (
+              <g>
+                {TUNNEL_RINGS.map((ring) => (
+                  <ellipse
+                    key={ring.rx}
+                    cx={100}
+                    cy={100}
+                    rx={ring.rx}
+                    ry={ring.ry}
+                    stroke="currentColor"
+                    strokeWidth={ring.width}
+                    strokeLinecap="round"
+                    opacity={ring.opacity}
+                  />
+                ))}
+              </g>
+            ) : (
             <motion.g
               animate={{ rotate: [0, 2.5, -1.5, 3, 0] }}
               transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
@@ -54,6 +74,7 @@ export function NotFoundPage() {
                 />
               ))}
             </motion.g>
+          )}
           </motion.g>
         </svg>
       </div>
