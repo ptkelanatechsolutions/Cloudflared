@@ -27,7 +27,7 @@
     "nextjs",
     "typescript"
   ],
-  "packageManager": "pnpm@11.5.0",
+  "packageManager": "pnpm@11.6.0",
   "scripts": {
     "dev": "pnpm --filter @cloudflared/web dev",
     "build": "pnpm --filter @cloudflared/web build",

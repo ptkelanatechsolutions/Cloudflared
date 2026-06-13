@@ -13,7 +13,7 @@
 <img src="https://img.shields.io/badge/Tailwind%20CSS%20v4-06B6D4?logo=tailwindcss&logoColor=white&style=flat-square" alt="Tailwind CSS v4" />
 <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square" alt="Docker" />
 <img src="https://img.shields.io/badge/Cloudflare%20Tunnel-F38020?logo=cloudflare&logoColor=white&style=flat-square" alt="Cloudflare Tunnel" />
-<img src="https://img.shields.io/badge/pnpm-11.5.0-F69220?logo=pnpm&logoColor=white&style=flat-square" alt="pnpm" />
+<img src="https://img.shields.io/badge/pnpm-11.6.0-F69220?logo=pnpm&logoColor=white&style=flat-square" alt="pnpm" />
 
 A self-hosted dashboard for managing Cloudflared tunnels on a home server via Docker.
 
@@ -57,7 +57,7 @@ For Docker deployment:
 For local development:
 
 - Node.js 22 or newer.
-- pnpm 11.5.0.
+- pnpm 11.6.0.
 - Git.
 
 ## Container Image
