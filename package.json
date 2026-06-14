@@ -1,6 +1,6 @@
 {
   "name": "cloudflared",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "private": true,
   "description": "A self-hosted dashboard for managing Cloudflared tunnels on a home server via Docker.",
   "license": "MIT",
