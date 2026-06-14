@@ -9,6 +9,15 @@ import { PanelShell } from "@/components/panel-shell";
 import { Eyebrow } from "@/components/eyebrow";
 import { PulseDot } from "@/components/pulse-dot";
 import { RuntimeChip } from "@/components/runtime-chip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { EASE, TONE_TEXT } from "@/lib/tunnel";
 import type { Tunnel } from "@/components/use-tunnel";
@@ -26,7 +35,7 @@ export function HeroCard({ t }: { t: Tunnel }) {
                 <h1
                   id="tunnel-status-label"
                   className={cn(
-                    "font-mono text-4xl font-semibold tracking-tight sm:text-5xl",
+                    "font-heading font-mono text-4xl font-semibold tracking-tight sm:text-5xl",
                     TONE_TEXT[t.meta.tone],
                   )}
                 >
@@ -66,43 +75,88 @@ export function HeroCard({ t }: { t: Tunnel }) {
         </div>
       </CardHeader>
       <CardContent className="flex h-full flex-col gap-6 px-6 pb-6">
-        <div className="rounded-[1.6rem] border border-border bg-muted/25 p-4">
+        <div className="rounded-3xl border border-border bg-muted/25 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-foreground">Operational posture</p>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">{t.meta.detail}</p>
             </div>
             {t.pendingRestart ? (
-              <Badge variant="outline" className="rounded-full px-2.5 text-[11px]">
+              <Badge variant="outline" className="rounded-full px-2.5 text-xs">
                 Pending restart
               </Badge>
             ) : null}
           </div>
         </div>
         <div className="mt-auto grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <Button
-            onClick={t.handleToggleTunnel}
-            disabled={t.busy || (!t.online && !t.tokenReady)}
-            variant={t.online ? "secondary" : "default"}
-            className="group/cta h-12 rounded-full pr-2 pl-5 text-sm active:scale-[0.98]"
-          >
-            <span className="flex items-center gap-2">
-              {t.busy ? (
-                <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
-              ) : (
-                <Power className="size-4" strokeWidth={1.8} />
-              )}
-              {t.online ? "Stop tunnel" : "Start tunnel"}
-            </span>
-            <span
-              className={cn(
-                "ml-auto flex size-8 items-center justify-center rounded-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cta:translate-x-1 group-hover/cta:-translate-y-px",
-                t.online ? "bg-secondary-foreground/10" : "bg-primary-foreground/15",
-              )}
+          {t.online ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  disabled={t.busy}
+                  variant="secondary"
+                  className="group/cta h-12 rounded-full pr-2 pl-5 text-sm active:scale-[0.98]"
+                >
+                  <span className="flex items-center gap-2">
+                    {t.busy ? (
+                      <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
+                    ) : (
+                      <Power className="size-4" strokeWidth={1.8} />
+                    )}
+                    Stop tunnel
+                  </span>
+                  <span
+                    className={cn(
+                      "ml-auto flex size-8 items-center justify-center rounded-full bg-secondary-foreground/10 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cta:translate-x-1 group-hover/cta:-translate-y-px",
+                    )}
+                  >
+                    <ArrowUpRight className="size-4" strokeWidth={1.8} />
+                  </span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Stop tunnel?</DialogTitle>
+                  <DialogDescription>
+                    This will disconnect the tunnel and stop serving traffic. You can start it again
+                    at any time.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="secondary"
+                    onClick={t.handleToggleTunnel}
+                    className="h-11 rounded-full px-4 active:scale-[0.98]"
+                  >
+                    Stop tunnel
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button
+              onClick={t.handleToggleTunnel}
+              disabled={t.busy || !t.tokenReady}
+              variant="default"
+              className="group/cta h-12 rounded-full pr-2 pl-5 text-sm active:scale-[0.98]"
             >
-              <ArrowUpRight className="size-4" strokeWidth={1.8} />
-            </span>
-          </Button>
+              <span className="flex items-center gap-2">
+                {t.busy ? (
+                  <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
+                ) : (
+                  <Power className="size-4" strokeWidth={1.8} />
+                )}
+                Start tunnel
+              </span>
+              <span
+                className={cn(
+                  "ml-auto flex size-8 items-center justify-center rounded-full bg-primary-foreground/15 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/cta:translate-x-1 group-hover/cta:-translate-y-px",
+                )}
+              >
+                <ArrowUpRight className="size-4" strokeWidth={1.8} />
+              </span>
+            </Button>
+          )}
           <Button
             onClick={t.handleRestartTunnel}
             disabled={t.busy || !t.tokenReady}

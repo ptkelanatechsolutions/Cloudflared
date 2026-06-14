@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { PanelShell } from "@/components/panel-shell";
 import { Separator } from "@/components/ui/separator";
 import { SwitchField } from "@/components/switch-field";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Tunnel } from "@/components/use-tunnel";
 
 export function TokenCard({ t }: { t: Tunnel }) {
@@ -23,20 +24,20 @@ export function TokenCard({ t }: { t: Tunnel }) {
           <div className="flex items-center justify-between gap-3">
             <Label
               htmlFor="tunnel-token"
-              className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase"
+              className="text-xs tracking-[0.18em] text-muted-foreground uppercase"
             >
               <KeyRound className="size-3.5" strokeWidth={1.8} />
               Tunnel token
             </Label>
             {t.state.tokenSet ? (
-              <Badge variant="outline" className="rounded-full px-2.5 text-[11px]">
+              <Badge variant="outline" className="rounded-full px-2.5 text-xs">
                 Stored
               </Badge>
             ) : null}
           </div>
 
-          <div className="rounded-[1.6rem] border border-border bg-muted/35 p-1.5">
-            <div className="flex gap-2 rounded-[1.15rem] bg-card p-1">
+          <div className="rounded-3xl border border-border bg-muted/35 p-1.5">
+            <div className="flex gap-2 rounded-2xl bg-card p-1">
               <Input
                 id="tunnel-token"
                 type="password"
@@ -109,23 +110,41 @@ export function TokenCard({ t }: { t: Tunnel }) {
             </Button>
 
             {t.pendingRestart ? (
-              <Button
-                onClick={t.handleSaveAndRestart}
-                disabled={t.busy || !t.dirtySettings || t.metricsPortInvalid}
-                className="group/cta h-11 w-full rounded-full px-3 active:scale-[0.98]"
-              >
-                {t.busy && <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />}
-                Save &amp; Restart
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0}>
+                    <Button
+                      onClick={t.handleSaveAndRestart}
+                      disabled={t.busy || !t.dirtySettings || t.metricsPortInvalid}
+                      className="group/cta h-11 w-full rounded-full px-3 active:scale-[0.98]"
+                    >
+                      {t.busy && <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />}
+                      Save &amp; Restart
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {t.metricsPortInvalid && (
+                  <TooltipContent>Fix port validation errors in Settings first.</TooltipContent>
+                )}
+              </Tooltip>
             ) : (
-              <Button
-                onClick={t.handleSaveSettings}
-                disabled={t.busy || !t.dirtySettings || t.metricsPortInvalid}
-                className="group/cta h-11 w-full rounded-full px-3 active:scale-[0.98]"
-              >
-                {t.busy && <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />}
-                Save Settings
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0}>
+                    <Button
+                      onClick={t.handleSaveSettings}
+                      disabled={t.busy || !t.dirtySettings || t.metricsPortInvalid}
+                      className="group/cta h-11 w-full rounded-full px-3 active:scale-[0.98]"
+                    >
+                      {t.busy && <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />}
+                      Save Settings
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {t.metricsPortInvalid && (
+                  <TooltipContent>Fix port validation errors in Settings first.</TooltipContent>
+                )}
+              </Tooltip>
             )}
           </div>
         </div>

@@ -17,10 +17,10 @@ export function SwitchField({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-border bg-muted/20 p-4">
+    <div className="rounded-3xl border border-border bg-muted/20 p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <Label className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+          <Label className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
             {label}
           </Label>
           <p className="text-sm leading-6 text-muted-foreground">{description}</p>

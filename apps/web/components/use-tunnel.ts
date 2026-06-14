@@ -12,6 +12,7 @@ import {
   type SetStateAction,
 } from "react";
 import { useReducedMotion } from "motion/react";
+import { toast } from "sonner";
 import {
   getState,
   restartTunnel,
@@ -23,7 +24,13 @@ import {
 } from "@/app/actions";
 import type { DashboardState } from "@/lib/dashboard";
 import type { TunnelSettings, TunnelStatus } from "@cloudflared/core";
-import { POLL_MS, LOG_FOLLOW_THRESHOLD, STATE_META, settingsEqual } from "@/lib/tunnel";
+import {
+  POLL_MS,
+  CONNECTION_TIMEOUT_MS,
+  LOG_FOLLOW_THRESHOLD,
+  STATE_META,
+  settingsEqual,
+} from "@/lib/tunnel";
 
 export interface Tunnel {
   state: DashboardState;
@@ -56,6 +63,7 @@ export interface Tunnel {
   logDialogOpen: boolean;
   setLogDialogOpen: Dispatch<SetStateAction<boolean>>;
   reducedMotion: boolean;
+  connectionLost: boolean;
   handleDraftChange: (patch: Partial<TunnelSettings>) => void;
   handleMetricsPortChange: (next: string) => void;
   handleSaveToken: () => void;
@@ -66,6 +74,11 @@ export interface Tunnel {
   handleDiscardDraft: () => void;
   handleExportLogs: () => void;
   jumpToLatest: () => void;
+}
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return "An unexpected error occurred.";
 }
 
 export function useTunnel(initial: DashboardState): Tunnel {
@@ -79,22 +92,69 @@ export function useTunnel(initial: DashboardState): Tunnel {
   );
   const [followLogs, setFollowLogs] = useState(true);
   const [isMutating, startMutation] = useTransition();
+  const [connectionLost, setConnectionLost] = useState(false);
   const reducedMotion = useReducedMotion() ?? false;
   const logViewportRootRef = useRef<HTMLDivElement | null>(null);
   const logs = useDeferredValue(state.logs);
   const [logDialogOpen, setLogDialogOpen] = useState(false);
+  const lastPollTimeRef = useRef(0);
+
+  // Initialize poll timestamp after first render
+  useEffect(() => {
+    lastPollTimeRef.current = Date.now();
+  }, []);
 
   const refresh = useEffectEvent(async () => {
-    const next = await getState();
-    startTransition(() => {
-      setState(next);
-    });
+    try {
+      const next = await getState();
+      lastPollTimeRef.current = Date.now();
+      setConnectionLost(false);
+      startTransition(() => {
+        setState(next);
+      });
+    } catch {
+      const elapsed = Date.now() - lastPollTimeRef.current;
+      if (elapsed >= CONNECTION_TIMEOUT_MS) {
+        setConnectionLost(true);
+      }
+    }
   });
 
+  // Polling with tab-visibility pause
   useEffect(() => {
-    const id = setInterval(() => void refresh(), POLL_MS);
+    const id = setInterval(() => {
+      if (!document.hidden) void refresh();
+    }, POLL_MS);
     return () => clearInterval(id);
   }, []);
+
+  // Refresh immediately when tab becomes visible
+  useEffect(() => {
+    const onVisibility = () => {
+      if (!document.hidden) void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  // Update screen reader live region when tunnel status changes
+  useEffect(() => {
+    const statusText =
+      state.status.state === "running"
+        ? "Tunnel is online and connected."
+        : state.status.state === "starting"
+          ? "Tunnel is connecting."
+          : state.status.state === "stopping"
+            ? "Tunnel is stopping."
+            : state.status.state === "error"
+              ? `Tunnel encountered an error: ${state.status.lastError ?? "Unknown error"}`
+              : "Tunnel is offline.";
+
+    const el = document.querySelector<HTMLElement>("[data-status-region]");
+    if (el) {
+      el.textContent = statusText;
+    }
+  }, [state.status]);
 
   const visibleSettings = isEditingSettings ? draftSettings : state.settings;
   const visibleMetricsPort = isEditingSettings
@@ -196,8 +256,12 @@ export function useTunnel(initial: DashboardState): Tunnel {
         const next = await saveToken(token);
         setState(next);
         setTokenInput("");
+        toast.success("Token saved successfully");
       } catch (err) {
         console.error("[tunnel] saveToken failed:", err);
+        toast.error(getErrorMessage(err), {
+          description: "Failed to save token. Please check the value and try again.",
+        });
       }
     });
   }
@@ -207,8 +271,16 @@ export function useTunnel(initial: DashboardState): Tunnel {
       try {
         const next = online ? await stopTunnel() : await startTunnel();
         setState(next);
+        if (online) {
+          toast.success("Tunnel stopped");
+        } else {
+          toast.success("Tunnel started");
+        }
       } catch (err) {
         console.error("[tunnel] toggleTunnel failed:", err);
+        toast.error(getErrorMessage(err), {
+          description: online ? "Failed to stop the tunnel." : "Failed to start the tunnel.",
+        });
       }
     });
   }
@@ -218,8 +290,10 @@ export function useTunnel(initial: DashboardState): Tunnel {
       try {
         const next = await restartTunnel();
         setState(next);
+        toast.success("Tunnel restarted");
       } catch (err) {
         console.error("[tunnel] restartTunnel failed:", err);
+        toast.error(getErrorMessage(err), { description: "Failed to restart the tunnel." });
       }
     });
   }
@@ -234,8 +308,10 @@ export function useTunnel(initial: DashboardState): Tunnel {
         setDraftSettings(next.settings);
         setDraftMetricsPort(String(next.settings.metricsPort));
         setIsEditingSettings(false);
+        toast.success("Settings saved");
       } catch (err) {
         console.error("[tunnel] saveSettings failed:", err);
+        toast.error(getErrorMessage(err), { description: "Failed to save settings." });
       }
     });
   }
@@ -250,8 +326,12 @@ export function useTunnel(initial: DashboardState): Tunnel {
         setDraftSettings(next.settings);
         setDraftMetricsPort(String(next.settings.metricsPort));
         setIsEditingSettings(false);
+        toast.success("Settings saved and tunnel restarted");
       } catch (err) {
         console.error("[tunnel] saveAndRestart failed:", err);
+        toast.error(getErrorMessage(err), {
+          description: "Failed to save settings and restart tunnel.",
+        });
       }
     });
   }
@@ -272,6 +352,7 @@ export function useTunnel(initial: DashboardState): Tunnel {
     link.download = `cloudflared-${new Date().toISOString().replaceAll(":", "-")}.log`;
     link.click();
     URL.revokeObjectURL(url);
+    toast.success("Logs exported");
   }
 
   function jumpToLatest() {
@@ -283,6 +364,26 @@ export function useTunnel(initial: DashboardState): Tunnel {
     viewport.scrollTop = viewport.scrollHeight;
     setFollowLogs(true);
   }
+
+  // Keyboard shortcuts
+  const handleKeyboardShortcuts = useEffectEvent((e: KeyboardEvent) => {
+    // Ctrl/Cmd + Enter: toggle tunnel
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleToggleTunnel();
+    }
+    // Ctrl/Cmd + L: open logs
+    if ((e.metaKey || e.ctrlKey) && e.key === "l") {
+      e.preventDefault();
+      setLogDialogOpen(true);
+    }
+  });
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => handleKeyboardShortcuts(e);
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
 
   return {
     state,
@@ -315,6 +416,7 @@ export function useTunnel(initial: DashboardState): Tunnel {
     logDialogOpen,
     setLogDialogOpen,
     reducedMotion,
+    connectionLost,
     handleDraftChange,
     handleMetricsPortChange,
     handleSaveToken,

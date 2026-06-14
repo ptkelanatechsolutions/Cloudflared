@@ -42,7 +42,7 @@ export function ThemeToggle() {
             title={label}
             onClick={() => setTheme(value)}
             className={cn(
-              "relative flex size-7 items-center justify-center rounded-full transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "relative flex size-9 items-center justify-center rounded-full transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
               isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -53,7 +53,7 @@ export function ThemeToggle() {
                 transition={{ type: "spring", stiffness: 480, damping: 34 }}
               />
             )}
-            <Icon className="relative z-10 size-3.5" strokeWidth={2} />
+            <Icon className="relative z-10 size-4" strokeWidth={2} />
           </button>
         );
       })}

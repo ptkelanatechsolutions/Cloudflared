@@ -22,7 +22,7 @@ export function ObservabilityCard({ t }: { t: Tunnel }) {
         <div className="flex items-center justify-between gap-3">
           <Eyebrow icon={Logs}>Observability</Eyebrow>
           {t.online && (
-            <Badge variant="outline" className="rounded-full px-2.5 text-[11px]">
+            <Badge variant="outline" className="rounded-full px-2.5 text-xs">
               Live
             </Badge>
           )}
@@ -59,7 +59,7 @@ export function ObservabilityCard({ t }: { t: Tunnel }) {
         {t.status.lastError ? (
           <div
             role="alert"
-            className="rounded-[1.5rem] border border-destructive/25 bg-destructive/10 p-4"
+            className="rounded-3xl border border-destructive/25 bg-destructive/10 p-4"
           >
             <div className="flex items-center gap-2 text-sm font-medium text-destructive">
               <Activity className="size-4" strokeWidth={1.8} />

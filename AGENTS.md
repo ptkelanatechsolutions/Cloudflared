@@ -59,6 +59,9 @@ workflow enforces all three.
 - **Server boundary:** all privileged work (spawning `cloudflared`, touching `/config`, process/file I/O) lives in `@cloudflared/core` and is imported **server-side only** — never from a `"use client"` component.
 - **Secrets:** the tunnel token is persisted in `/config` and **never** returned to the client or logged. Actions expose only `tokenSet: boolean`.
 - **Styling:** use only the semantic color tokens in `apps/web/app/globals.css` (no hard-coded `#hex`/`rgb()`/`bg-white/10`), `lucide-react` icons, and `motion/react` for animation.
+- **Notifications:** use `sonner` (`toast.success()` / `toast.error()`) for all user-facing feedback from server actions; never silently `console.error`.
+- **Accessibility:** the `[data-status-region]` aria-live element is updated automatically by `use-tunnel.ts` — always keep it in `page.tsx`.
+- **Design tokens:** use the `--radius-*` CSS variables instead of hardcoded `rounded-[...]` values. Available: `rounded-sm` through `rounded-5xl`.
 - **Commits:** Conventional Commits (`fix(core): …`, `feat(container): …`, `docs: …`, `chore: …`).
 - **Releases:** SemVer tags **without** a `v` prefix (e.g. `1.1.5`). Pushing such a tag triggers `container.yml` to build and publish the image to GHCR.
 

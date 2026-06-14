@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,6 +44,14 @@ export default function RootLayout({
             <ErrorBoundary>{children}</ErrorBoundary>
           </TooltipProvider>
         </ThemeProvider>
+        <Toaster
+          richColors
+          closeButton
+          position="bottom-right"
+          toastOptions={{
+            duration: 4000,
+          }}
+        />
       </body>
     </html>
   );

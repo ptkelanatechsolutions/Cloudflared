@@ -5,7 +5,7 @@ export function Eyebrow({ children, icon: Icon }: { children: React.ReactNode; i
   return (
     <Badge
       variant="outline"
-      className="rounded-full px-3 py-1 text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
+      className="rounded-full px-3 py-1 text-[11px] tracking-[0.2em] text-muted-foreground uppercase"
     >
       <Icon className="size-3" strokeWidth={1.8} />
       {children}

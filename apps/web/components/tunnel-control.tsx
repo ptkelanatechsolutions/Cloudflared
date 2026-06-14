@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertTriangle } from "lucide-react";
 import type { DashboardState } from "@/lib/dashboard";
 import { useTunnel } from "@/components/use-tunnel";
 import { HeroCard } from "@/components/sections/hero-card";
@@ -12,6 +13,15 @@ export function TunnelControl({ initial }: { initial: DashboardState }) {
 
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-w-[88rem] flex-col">
+      {t.connectionLost && (
+        <div
+          role="alert"
+          className="mb-4 flex items-center gap-2 rounded-2xl border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          <AlertTriangle className="size-4 shrink-0" strokeWidth={1.8} />
+          <span>Connection lost. Unable to reach the server.</span>
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-4 xl:grid-cols-12">
         <HeroCard t={t} />
         <TokenCard t={t} />

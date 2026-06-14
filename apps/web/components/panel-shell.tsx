@@ -26,11 +26,11 @@ export function PanelShell({
         ease: EASE,
       }}
       className={cn(
-        "min-h-0 rounded-[2rem] border border-border bg-muted/35 p-2 shadow-sm",
+        "min-h-0 rounded-5xl border border-border bg-muted/35 p-2 shadow-sm",
         className,
       )}
     >
-      <Card className="h-full min-h-0 rounded-[1.65rem] border-0 bg-card ring-1 ring-border/70">
+      <Card className="h-full min-h-0 rounded-4xl border-0 bg-card ring-1 ring-border/70">
         {children}
       </Card>
     </motion.section>

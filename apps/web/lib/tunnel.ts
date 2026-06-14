@@ -1,7 +1,8 @@
 import type { TunnelSettings, TunnelState } from "@cloudflared/core";
 
 export const EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
-export const POLL_MS = 1000;
+export const POLL_MS = 3000;
+export const CONNECTION_TIMEOUT_MS = POLL_MS * 4;
 export const LOG_FOLLOW_THRESHOLD = 24;
 
 export type Tone = "active" | "idle" | "error";
@@ -94,7 +95,7 @@ export function settingsEqual(a: TunnelSettings, b: TunnelSettings): boolean {
 export function formatTimestamp(value: string | null): string | null {
   if (!value) return null;
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));

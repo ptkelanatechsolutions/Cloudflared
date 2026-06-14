@@ -26,7 +26,7 @@ export function SettingsCard({ t }: { t: Tunnel }) {
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+              <Label className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
                 <Globe className="size-3.5" strokeWidth={1.8} />
                 Protocol
               </Label>
@@ -39,7 +39,7 @@ export function SettingsCard({ t }: { t: Tunnel }) {
               onValueChange={(next) => {
                 if (next) t.handleDraftChange({ protocol: next as TunnelSettings["protocol"] });
               }}
-              className="grid w-full grid-cols-3 gap-0 rounded-[1rem] bg-card p-1"
+              className="grid w-full grid-cols-3 gap-0 rounded-2xl bg-card p-1"
             >
               {PROTOCOL_OPTIONS.map((o) => (
                 <ToggleGroupItem
@@ -55,7 +55,7 @@ export function SettingsCard({ t }: { t: Tunnel }) {
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+              <Label className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
                 <Globe className="size-3.5" strokeWidth={1.8} />
                 Region
               </Label>
@@ -68,7 +68,7 @@ export function SettingsCard({ t }: { t: Tunnel }) {
               onValueChange={(next) => {
                 if (next) t.handleDraftChange({ region: next as TunnelSettings["region"] });
               }}
-              className="grid w-full grid-cols-2 gap-0 rounded-[1rem] bg-card p-1"
+              className="grid w-full grid-cols-2 gap-0 rounded-2xl bg-card p-1"
             >
               {REGION_OPTIONS.map((o) => (
                 <ToggleGroupItem
@@ -84,7 +84,7 @@ export function SettingsCard({ t }: { t: Tunnel }) {
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+              <Label className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
                 <Network className="size-3.5" strokeWidth={1.8} />
                 Edge IP
               </Label>
@@ -98,7 +98,7 @@ export function SettingsCard({ t }: { t: Tunnel }) {
                 if (next)
                   t.handleDraftChange({ edgeIpVersion: next as TunnelSettings["edgeIpVersion"] });
               }}
-              className="grid w-full grid-cols-3 gap-0 rounded-[1rem] bg-card p-1"
+              className="grid w-full grid-cols-3 gap-0 rounded-2xl bg-card p-1"
             >
               {EDGE_OPTIONS.map((o) => (
                 <ToggleGroupItem
@@ -122,12 +122,12 @@ export function SettingsCard({ t }: { t: Tunnel }) {
             />
             {t.visibleSettings.metricsEnabled && (
               <div className="space-y-2">
-                <Label className="text-[11px] tracking-[0.18em] text-muted-foreground uppercase">
+                <Label className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
                   <Database className="size-3.5" strokeWidth={1.8} />
                   Port
                 </Label>
-                <div className="rounded-[1.6rem] border border-border bg-muted/35 p-1.5">
-                  <div className="rounded-[1.15rem] bg-card p-1">
+                <div className="rounded-3xl border border-border bg-muted/35 p-1.5">
+                  <div className="rounded-2xl bg-card p-1">
                     <Input
                       type="text"
                       inputMode="numeric"

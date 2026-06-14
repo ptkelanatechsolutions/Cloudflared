@@ -57,7 +57,7 @@ export function VersionNotification() {
         onFocus={handleOpen}
         onBlur={handleClose}
         onClick={handleClick}
-        className="flex items-center gap-1 rounded-full bg-muted/50 px-2 py-px text-[11px] font-medium tracking-tight text-muted-foreground/70 transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-muted hover:text-foreground"
+        className="flex items-center gap-1 rounded-full bg-muted/50 px-2 py-px text-xs font-medium tracking-tight text-muted-foreground/70 transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-muted hover:text-foreground"
         aria-label={
           hasUpdate
             ? `Update available: version ${info?.latest}`
@@ -142,7 +142,7 @@ function Tooltip({ info, hasUpdate, fetchState, onRefresh }: TooltipProps) {
             href={latest ? `${RELEASES_URL}/tag/${latest}` : RELEASES_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="group/link inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/20"
+            className="group/link inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
           >
             View Release
             <ArrowUpRight className="size-3 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/link:translate-x-px group-hover/link:-translate-y-px" />

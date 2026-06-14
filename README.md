@@ -39,6 +39,9 @@ The application runs as a Docker container and stores persistent configuration i
 - Configurable tunnel protocol: `auto`, `http2`, or `quic`.
 - Configurable region: `auto` or `us`.
 - Optional metrics endpoint support.
+- Toast notifications for all server actions (save, start, stop, restart).
+- Keyboard shortcuts (`Ctrl+Enter` to toggle tunnel, `Ctrl+L` to open logs).
+- Connection health monitoring with "Connection lost" indicator.
 - Production-ready Next.js standalone output.
 - Docker-first deployment for home servers.
 - GitHub Container Registry image publishing.
@@ -71,7 +74,7 @@ ghcr.io/ptkelanatechsolutions/cloudflared
 Recommended stable tag:
 
 ```text
-ghcr.io/ptkelanatechsolutions/cloudflared:1.1.5
+ghcr.io/ptkelanatechsolutions/cloudflared:1.8.3
 ```
 
 Latest tag:

@@ -16,7 +16,7 @@ in the container image. Libraries do **not** go here (those live in
 
 - **Stack:** Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict),
   Tailwind CSS v4, shadcn/ui, Motion (`motion/react`), `lucide-react`,
-  `next-themes`.
+  `next-themes`, `sonner`.
 - **Role:** It is both the UI **and** the backend. Server Actions / the Node
   server process talk to `cloudflared` through `@cloudflared/core`. There is no
   separate backend service — everything ships as one container.
@@ -26,7 +26,8 @@ in the container image. Libraries do **not** go here (those live in
 | Path                            | Purpose                                                                                                                            |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `app/page.tsx`                  | The single page. `export const dynamic = "force-dynamic"`; server-renders initial state via `getState()`.                          |
-| `app/layout.tsx`                | Root layout, Geist fonts, `ThemeProvider` (dark default, `enableSystem`).                                                          |
+| `app/layout.tsx`                | Root layout, Geist fonts, `ThemeProvider` (dark default, `enableSystem`), `Toaster` (sonner).                                      |
+| `app/loading.tsx`               | Skeleton loading matching dashboard card layout for initial page load.                                                             |
 | `app/actions.ts`                | `"use server"` — `getState`, `saveToken`, `saveSettings`, `startTunnel`, `stopTunnel`. The **only** bridge between UI and core.    |
 | `app/globals.css`               | Tailwind + shadcn theme tokens (`--background`, `--primary`, …). The single source of truth for colors.                            |
 | `instrumentation.ts`            | Runs once on server boot. Auto-starts the tunnel if a token is saved and `autoStart` is on ("run-and-forget").                     |
