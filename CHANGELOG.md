@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.8.3] 2026-06-15 [(6a62e5d)](https://github.com/ptkelanatechsolutions/Cloudflared/commit/6a62e5dbf448990c4ec476f61945a980a874e72e)
+
+### Fixed
+
+**Error Handling & Feedback**
+
+- Added toast notifications (`sonner`) for success/error feedback on all server actions (save token, toggle tunnel, restart, save settings, save and restart).
+- ErrorBoundary now offers "Try again" (soft reset) and "Reload page" options, plus collapsible error details in development mode and a link to GitHub Issues.
+- Added loading skeleton (`loading.tsx`) matching dashboard card layout to eliminate blank screen during server-side render.
+- Added "Logs exported" toast confirmation after log file download.
+- Added tooltip on disabled Save/Save & Restart buttons when metrics port validation fails.
+
+**Accessibility**
+
+- `aria-live` region (`data-status-region`) now dynamically updates with tunnel status changes for screen reader users.
+- Overflow badge "+N more entries" changed from `<span>` to `<button>` for native keyboard accessibility.
+- Log dialog header button relabeled from "Minimize" to "Close" for accurate action description.
+- Touch targets increased: theme toggle (`size-7` → `size-9`), log dialog buttons (`h-7` → `h-9`), dialog close button (`icon-sm` → `size-9`).
+- Stop tunnel now shows a confirmation dialog before stopping.
+
+**Design Consistency**
+
+- All hardcoded border radius values replaced with system tokens, with a new `--radius-5xl` token added to `globals.css`.
+- Minimum label font size increased from 10-11px to 11-12px across all components.
+- Added `font-heading` class to main heading in HeroCard.
+
+**Performance & State Management**
+
+- Polling interval reduced from 1000ms to 3000ms with `document.hidden` pause (no background polling).
+- Immediate refresh on tab visibility change for up-to-date state.
+- Added connection health detection: "Connection lost" banner appears after 4 consecutive polling failures (~12s).
+- Log line stagger animation limited to first 5 lines to avoid cumulative delay.
+
+**General**
+
+- Added keyboard shortcuts: `Ctrl/Cmd+Enter` (toggle tunnel), `Ctrl/Cmd+L` (open log dialog).
+- Date/time formatting now uses browser default locale instead of hardcoded `"en-US"`.
+- Removed unused `ToggleField` component (dead code).
+
 ## [1.8.2] 20206-06-14 [(1e6289e)](https://github.com/ptkelanatechsolutions/Cloudflared/commit/1e6289ed9de5e04fd858db5c122720ed531f3046)
 
 ### Fixed
