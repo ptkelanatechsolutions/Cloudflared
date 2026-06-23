@@ -1,5 +1,70 @@
 # Changelog
 
+## [1.9.0] 2026-06-23 [(20365c9)](https://github.com/ptkelanatechsolutions/Cloudflared/commit/20365c93f434768e84c6888978093f0eba062f96)
+
+### Added
+
+**Asymmetrical 2-Column Dashboard Layout**
+
+- Restructured the dashboard from 4 stacked full-width cards to a responsive 2-column grid using `xl:grid-cols-12`.
+- Hero card (7 columns) and Token card (5 columns) sit side by side on the top row.
+- Settings card (7 columns) and Observability card (5 columns) sit side by side on the bottom row.
+- Visual hierarchy now follows a natural left-to-right, top-to-bottom scan pattern.
+
+**New Semantic Color Tokens**
+
+- Added `--status-active` emerald green token (`oklch(0.527 0.154 171.94)`) for live/active status indicators.
+- `PulseDot` now uses `--status-active` instead of `--primary` for clearer semantic meaning.
+
+### Changed
+
+**Card and Radius System**
+
+- Unified all card radii: `PanelShell` uses `rounded-2xl` with `shadow-xs` (was `rounded-5xl` nested inside `rounded-4xl` with nested Card).
+- Interactive elements (buttons, inputs, toggle groups) use `rounded-xl`/`rounded-lg`.
+- Removed the outer `bg-muted/35` wrapper — cards now render directly as `bg-card` with `border-border/50`.
+- All border opacities harmonized to `border-border/50` for a softer, cleaner separation.
+
+**Navbar**
+
+- Navbar starts transparent (`border-transparent bg-card/50`) and gains glass effect on scroll.
+- Height reduced to `py-2` for a more compact presence.
+- Border radius changed to `rounded-2xl`.
+- Navbar is now constrained to `max-w-[88rem]` matching page content width.
+
+**Label Styling**
+
+- Standardised all label text across components: `text-[11px] font-medium tracking-wider text-muted-foreground uppercase`.
+- Label icon gap unified to `gap-1.5`.
+- Eyebrow component changed from wrapping `Badge` component to plain `span` for cleaner markup.
+
+**Background and Page Layout**
+
+- Replaced the previous heavy radial gradient with a subtle top gradient: `radial-gradient(primary 6% at 50% -20%)`.
+- Added `bg-gradient-to-b from-background via-background to-muted/20` for a subtle depth transition.
+- Container padding set to `px-4 pb-6` for consistent spacing.
+
+**Button and Toggle Styles**
+
+- All buttons changed from `rounded-full` to `rounded-xl` for a unified shape language.
+- Toggle groups use `spacing={0}` with `rounded-lg` container and individual `rounded-md` items.
+- Hero action buttons arranged in a compact `flex-wrap` row instead of full-width grid.
+
+### Fixed
+
+**Theme Toggle Hydration Mismatch**
+
+- Fixed React hydration error caused by `next-themes` returning `theme = undefined` on the server.
+- Replaced `useState` + `useEffect` pattern with `useSyncExternalStore` for SSR-safe mount detection.
+- Server render now shows an inert placeholder with all buttons `disabled` and no `aria-checked`, matching the initial client render.
+- Resolves ESLint `react-hooks/set-state-in-effect` warning in React 19.
+
+### Documentation
+
+- Updated `AGENTS.md` with `--status-active` token reference and shape convention guidance.
+- Updated `apps/README.md` key files table to document `use-tunnel.ts`, `panel-shell.tsx`, `lib/tunnel.ts`, and `sections/` directory.
+- Updated `README.md` project structure tree to show `components/sections/` and `components/ui/` subdirectories.
+
 ## [1.8.3] 2026-06-15 [(6a62e5d)](https://github.com/ptkelanatechsolutions/Cloudflared/commit/6a62e5dbf448990c4ec476f61945a980a874e72e)
 
 ### Fixed
