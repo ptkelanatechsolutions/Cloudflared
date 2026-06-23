@@ -1,14 +1,10 @@
 import type { LucideIcon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 export function Eyebrow({ children, icon: Icon }: { children: React.ReactNode; icon: LucideIcon }) {
   return (
-    <Badge
-      variant="outline"
-      className="rounded-full px-3 py-1 text-[11px] tracking-[0.2em] text-muted-foreground uppercase"
-    >
-      <Icon className="size-3" strokeWidth={1.8} />
+    <span className="mb-1 flex items-center gap-1.5 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+      <Icon className="size-3.5" strokeWidth={1.8} />
       {children}
-    </Badge>
+    </span>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { motion } from "motion/react";
 import { Monitor, Moon, Sun } from "lucide-react";
@@ -11,24 +12,54 @@ const OPTIONS = [
   { value: "dark", Icon: Moon, label: "Dark" },
 ] as const;
 
-/**
- * Segmented theme switch (Light / System / Dark). Defaults to system. The active
- * pill slides between options via a shared `layoutId`. All colors come from the
- * globals.css tokens, so the control itself is theme-aware.
- *
- * `theme` is `undefined` on the server and the first client render, so both
- * resolve to "system" (no hydration mismatch); next-themes then updates it and
- * the pill animates to the real selection.
- */
+/** Returns true once the component has mounted on the client. */
+function useMounted() {
+  return useSyncExternalStore(
+    () => {
+      /* noop — never subscribes */
+      return () => {};
+    },
+    () => true, // client snapshot
+    () => false, // server snapshot
+  );
+}
+
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const mounted = useMounted();
+
+  // Render inert placeholder during SSR to avoid hydration mismatch.
+  // next-themes returns `theme = undefined` on the server, which would
+  // make the active state differ between server and client renders.
+  if (!mounted) {
+    return (
+      <div
+        role="radiogroup"
+        aria-label="Theme"
+        className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5"
+      >
+        {OPTIONS.map(({ label, Icon }) => (
+          <button
+            key={label}
+            type="button"
+            disabled
+            aria-label={label}
+            className="relative flex size-7 items-center justify-center rounded-md text-muted-foreground"
+          >
+            <Icon className="size-3.5" strokeWidth={2} />
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   const active = theme ?? "system";
 
   return (
     <div
       role="radiogroup"
       aria-label="Theme"
-      className="flex items-center gap-0.5 rounded-full bg-muted p-0.5"
+      className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5"
     >
       {OPTIONS.map(({ value, Icon, label }) => {
         const isActive = active === value;
@@ -42,18 +73,18 @@ export function ThemeToggle() {
             title={label}
             onClick={() => setTheme(value)}
             className={cn(
-              "relative flex size-9 items-center justify-center rounded-full transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "relative flex size-7 items-center justify-center rounded-md transition-colors",
               isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
             {isActive && (
               <motion.span
                 layoutId="theme-toggle-active"
-                className="absolute inset-0 rounded-full bg-primary"
-                transition={{ type: "spring", stiffness: 480, damping: 34 }}
+                className="absolute inset-0 rounded-md bg-primary shadow-xs"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
             )}
-            <Icon className="relative z-10 size-4" strokeWidth={2} />
+            <Icon className="relative z-10 size-3.5" strokeWidth={2} />
           </button>
         );
       })}

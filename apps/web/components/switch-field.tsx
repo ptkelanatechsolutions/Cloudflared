@@ -17,13 +17,13 @@ export function SwitchField({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="rounded-3xl border border-border bg-muted/20 p-4">
+    <div className="rounded-xl border border-border/50 bg-muted/15 p-3.5">
       <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <Label className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
+        <div className="space-y-0.5">
+          <Label className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
             {label}
           </Label>
-          <p className="text-sm leading-6 text-muted-foreground">{description}</p>
+          <p className="text-sm leading-5 text-muted-foreground">{description}</p>
         </div>
         <Switch checked={checked} disabled={disabled} onCheckedChange={onCheckedChange} />
       </div>

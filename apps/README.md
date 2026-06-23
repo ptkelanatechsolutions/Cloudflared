@@ -29,11 +29,15 @@ in the container image. Libraries do **not** go here (those live in
 | `app/layout.tsx`                | Root layout, Geist fonts, `ThemeProvider` (dark default, `enableSystem`), `Toaster` (sonner).                                      |
 | `app/loading.tsx`               | Skeleton loading matching dashboard card layout for initial page load.                                                             |
 | `app/actions.ts`                | `"use server"` — `getState`, `saveToken`, `saveSettings`, `startTunnel`, `stopTunnel`. The **only** bridge between UI and core.    |
-| `app/globals.css`               | Tailwind + shadcn theme tokens (`--background`, `--primary`, …). The single source of truth for colors.                            |
+| `app/globals.css`               | Tailwind + shadcn theme tokens (`--background`, `--primary`, `--status-active`, …). The single source of truth for colors.         |
 | `instrumentation.ts`            | Runs once on server boot. Auto-starts the tunnel if a token is saved and `autoStart` is on ("run-and-forget").                     |
-| `components/tunnel-control.tsx` | `"use client"` — the dashboard UI (status, token input, start/stop, settings).                                                     |
-| `components/ui/`                | shadcn primitives (`Button`, `Input`).                                                                                             |
+| `components/tunnel-control.tsx` | `"use client"` — the dashboard UI (2-column asymmetrical grid layout with Hero, Token, Settings, Observability cards).             |
+| `components/use-tunnel.ts`      | `"use client"` — central hook for polling, draft state, keyboard shortcuts, and all tunnel action handlers.                        |
+| `components/panel-shell.tsx`    | Animated card wrapper used by all section components. Entry stagger via `delay` prop, motion entry, reduced-motion-aware.          |
+| `components/sections/`          | Section card components: `hero-card.tsx`, `token-card.tsx`, `settings-card.tsx`, `observability-card.tsx`, `log-dialog.tsx`.       |
+| `components/ui/`                | shadcn primitives (`Button`, `Input`, `Card`, `Switch`, …).                                                                        |
 | `lib/dashboard.ts`              | `DashboardState` type shared between actions and the client.                                                                       |
+| `lib/tunnel.ts`                 | Tunnel constants: poll intervals, state metadata, tone/color maps, formatting helpers.                                             |
 | `next.config.ts`                | `output: "standalone"`, `outputFileTracingRoot` (monorepo root), `transpilePackages: ["@cloudflared/core"]`, `images.unoptimized`. |
 
 ### How a request flows

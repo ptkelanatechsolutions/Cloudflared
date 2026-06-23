@@ -57,7 +57,7 @@ export function VersionNotification() {
         onFocus={handleOpen}
         onBlur={handleClose}
         onClick={handleClick}
-        className="flex items-center gap-1 rounded-full bg-muted/50 px-2 py-px text-xs font-medium tracking-tight text-muted-foreground/70 transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-muted hover:text-foreground"
+        className="flex items-center gap-1 rounded-md bg-muted/40 px-2 py-px text-[11px] font-medium tracking-tight text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
         aria-label={
           hasUpdate
             ? `Update available: version ${info?.latest}`
@@ -92,13 +92,6 @@ function PulseDot() {
       />
     </span>
   );
-}
-
-interface TooltipProps {
-  info: VersionCheck | null;
-  hasUpdate: boolean;
-  fetchState: "idle" | "loading" | "error";
-  onRefresh: () => void;
 }
 
 function Tooltip({ info, hasUpdate, fetchState, onRefresh }: TooltipProps) {
@@ -156,4 +149,11 @@ function Tooltip({ info, hasUpdate, fetchState, onRefresh }: TooltipProps) {
       )}
     </motion.div>
   );
+}
+
+interface TooltipProps {
+  info: VersionCheck | null;
+  hasUpdate: boolean;
+  fetchState: "idle" | "loading" | "error";
+  onRefresh: () => void;
 }

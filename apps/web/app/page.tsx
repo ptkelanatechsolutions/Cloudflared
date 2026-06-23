@@ -8,18 +8,21 @@ export default async function Home() {
   const initial = await getState();
 
   return (
-    <main id="main-content" className="relative flex h-dvh flex-col overflow-y-auto">
+    <main
+      id="main-content"
+      className="relative flex min-h-dvh flex-col bg-gradient-to-b from-background via-background to-muted/20"
+    >
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 opacity-80"
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
           backgroundImage:
-            "radial-gradient(45rem 30rem at 8% 0%, color-mix(in oklab, var(--muted) 72%, transparent), transparent 68%), radial-gradient(40rem 30rem at 100% 100%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%)",
+            "radial-gradient(60rem 40rem at 50% -20%, color-mix(in oklab, var(--primary) 6%, transparent), transparent 70%)",
         }}
       />
-      <div className="relative z-0 mx-auto flex w-full max-w-[88rem] flex-1 flex-col px-4">
+      <div className="relative z-0 mx-auto flex w-full max-w-[88rem] flex-1 flex-col px-4 pb-6">
         <Navbar />
-        <div className="flex-1 pt-3 pb-4 md:pt-4">
+        <div className="flex-1 pt-4">
           <TunnelControl initial={initial} />
         </div>
       </div>

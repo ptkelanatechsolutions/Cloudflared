@@ -8,7 +8,6 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Eyebrow } from "@/components/eyebrow";
-import { cn } from "@/lib/utils";
 import { EASE, LOG_FOLLOW_THRESHOLD } from "@/lib/tunnel";
 import type { Tunnel } from "@/components/use-tunnel";
 
@@ -72,7 +71,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
     <>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-2 text-xs tracking-[0.18em] text-muted-foreground uppercase">
+          <span className="flex items-center gap-1.5 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
             <ScrollText className="size-3.5" strokeWidth={1.8} />
             Event log
           </span>
@@ -80,7 +79,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
             variant="ghost"
             size="sm"
             onClick={() => setOpen(true)}
-            className="h-9 rounded-full px-3 text-xs text-muted-foreground"
+            className="h-8 rounded-lg px-3 text-xs text-muted-foreground"
           >
             <Maximize2 className="size-3.5" strokeWidth={1.8} />
             Expand
@@ -89,7 +88,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
 
         <div className="relative">
           {t.logs.length === 0 && !t.busy && (
-            <p className="py-4 text-center text-sm leading-6 text-muted-foreground">
+            <p className="py-4 text-center text-sm leading-5 text-muted-foreground">
               No log entries yet.
             </p>
           )}
@@ -97,20 +96,18 @@ export function LogDialog({ t }: { t: Tunnel }) {
           {t.logs.length === 0 && t.busy && (
             <div className="flex items-center justify-center gap-2 py-4">
               <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
-              <span className="text-sm leading-6 text-muted-foreground">Connecting…</span>
+              <span className="text-sm leading-5 text-muted-foreground">Connecting...</span>
             </div>
           )}
 
           {t.logs.length > 0 && (
             <div ref={scrollRef}>
-              <ScrollArea
-                className={cn("max-h-[17rem] rounded-3xl border border-border bg-muted/35")}
-              >
-                <div role="log" className="space-y-0.5 p-4 font-mono text-[13px] leading-6">
+              <ScrollArea className="max-h-56 rounded-xl border border-border/50 bg-muted/15">
+                <div role="log" className="space-y-0.5 p-3.5 font-mono text-[13px] leading-6">
                   {previewLines.map((line, i) => (
                     <motion.div
                       key={`${i}-${line}`}
-                      initial={{ opacity: 0, x: t.reducedMotion ? 0 : -8 }}
+                      initial={{ opacity: 0, x: t.reducedMotion ? 0 : -6 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.25, ease: EASE, delay: i < 5 ? 0.03 * i : 0 }}
                     >
@@ -135,7 +132,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
                 <button
                   type="button"
                   onClick={() => setOpen(true)}
-                  className="cursor-pointer rounded-full border border-border px-3 py-1 text-xs text-foreground transition-colors hover:bg-muted"
+                  className="cursor-pointer rounded-lg border border-border px-3 py-1 text-xs text-foreground transition-colors hover:bg-muted"
                 >
                   +{overflowCount} more {overflowCount === 1 ? "entry" : "entries"}
                 </button>
@@ -150,7 +147,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
           showCloseButton={false}
           className="flex max-h-[80vh] w-[calc(100%-2rem)] max-w-3xl flex-col gap-0 p-0"
         >
-          <DialogHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border px-6 py-4">
+          <DialogHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border px-5 py-3.5">
             <DialogTitle className="sr-only">Full event log</DialogTitle>
             <Eyebrow icon={ScrollText}>Full event log</Eyebrow>
             <div className="flex items-center gap-2">
@@ -159,7 +156,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
                 size="sm"
                 onClick={t.handleExportLogs}
                 disabled={t.logs.length === 0}
-                className="h-9 rounded-full px-3 text-xs text-muted-foreground"
+                className="h-8 rounded-lg px-3 text-xs text-muted-foreground"
               >
                 <ArrowDownToLine className="size-3.5" strokeWidth={1.8} />
                 Export
@@ -168,7 +165,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setOpen(false)}
-                className="h-9 rounded-full px-3 text-xs text-muted-foreground"
+                className="h-8 rounded-lg px-3 text-xs text-muted-foreground"
               >
                 <Minus className="size-3.5" strokeWidth={1.8} />
                 Close
@@ -181,7 +178,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
           <div className="flex flex-1 overflow-hidden p-0">
             <div ref={dialogScrollRef} className="flex-1">
               <ScrollArea className="h-full">
-                <div className="space-y-0.5 p-6 font-mono text-[13px] leading-7">
+                <div className="space-y-0.5 p-5 font-mono text-[13px] leading-7">
                   {t.logs.length === 0 && (
                     <p className="text-muted-foreground">No log entries yet.</p>
                   )}

@@ -358,6 +358,8 @@ Cloudflared/
 │   └── web/
 │       ├── app/
 │       ├── components/
+│       │   ├── sections/  (hero, token, settings, observability, log dialog)
+│       │   └── ui/        (shadcn primitives)
 │       ├── lib/
 │       ├── public/
 │       ├── next.config.ts

@@ -58,10 +58,10 @@ workflow enforces all three.
 
 - **Server boundary:** all privileged work (spawning `cloudflared`, touching `/config`, process/file I/O) lives in `@cloudflared/core` and is imported **server-side only** — never from a `"use client"` component.
 - **Secrets:** the tunnel token is persisted in `/config` and **never** returned to the client or logged. Actions expose only `tokenSet: boolean`.
-- **Styling:** use only the semantic color tokens in `apps/web/app/globals.css` (no hard-coded `#hex`/`rgb()`/`bg-white/10`), `lucide-react` icons, and `motion/react` for animation.
+- **Styling:** use only the semantic color tokens in `apps/web/app/globals.css` (no hard-coded `#hex`/`rgb()`/`bg-white/10`), `lucide-react` icons, and `motion/react` for animation. Available tokens include `--status-active` (emerald green) for live/active indicators.
 - **Notifications:** use `sonner` (`toast.success()` / `toast.error()`) for all user-facing feedback from server actions; never silently `console.error`.
 - **Accessibility:** the `[data-status-region]` aria-live element is updated automatically by `use-tunnel.ts` — always keep it in `page.tsx`.
-- **Design tokens:** use the `--radius-*` CSS variables instead of hardcoded `rounded-[...]` values. Available: `rounded-sm` through `rounded-5xl`.
+- **Design tokens:** use the `--radius-*` CSS variables instead of hardcoded `rounded-[...]` values. Available: `rounded-sm` through `rounded-5xl`. Common shape conventions: cards and section shells use `rounded-2xl`, interactive elements (buttons, inputs, toggle groups) use `rounded-xl`/`rounded-lg`, badges use `rounded-full`.
 - **Commits:** Conventional Commits (`fix(core): …`, `feat(container): …`, `docs: …`, `chore: …`).
 - **Releases:** SemVer tags **without** a `v` prefix (e.g. `1.1.5`). Pushing such a tag triggers `container.yml` to build and publish the image to GHCR.
 

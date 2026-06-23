@@ -11,15 +11,15 @@ export function PulseDot({ tone }: { tone: Tone }) {
   const reducedMotion = useReducedMotion();
 
   return (
-    <span className="relative flex size-3">
+    <span className="relative flex size-2.5">
       {tone === "active" && !reducedMotion ? (
         <motion.span
           className={cn("absolute inline-flex size-full rounded-full", color)}
-          animate={{ scale: [1, 2.3], opacity: [0.5, 0] }}
+          animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
         />
       ) : null}
-      <span className={cn("relative inline-flex size-3 rounded-full", color)} />
+      <span className={cn("relative inline-flex size-2.5 rounded-full", color)} />
     </span>
   );
 }

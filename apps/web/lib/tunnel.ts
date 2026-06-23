@@ -76,7 +76,7 @@ export const TONE_TEXT: Record<Tone, string> = {
 };
 
 export const TONE_DOT: Record<Tone, string> = {
-  active: "bg-primary",
+  active: "bg-status-active",
   idle: "bg-muted-foreground",
   error: "bg-destructive",
 };
