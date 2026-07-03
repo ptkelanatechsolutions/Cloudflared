@@ -14,3 +14,18 @@
 
 # Local env
 **/.env*
+
+# Build artifacts
+**/*.tsbuildinfo
+**/coverage
+**/out
+
+# Project docs & config not needed at runtime
+scripts/
+AGENTS.md
+CLAUDE.md
+CHANGELOG.md
+.prettierignore
+.gitignore
+prettier.config.mjs
+LICENSE

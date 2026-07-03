@@ -43,3 +43,16 @@ yarn.lock
 
 # formats
 format/
+
+# turborepo
+.turbo/
+
+# IDE
+.vscode/
+.idea/
+
+# build output (non-root)
+dist/
+
+# Claude Code (local per-user sessions)
+.claude/

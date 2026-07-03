@@ -87,56 +87,58 @@ export function HeroCard({ t }: { t: Tunnel }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {t.online ? (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  disabled={t.busy}
-                  variant="secondary"
-                  className="h-10 rounded-xl px-4 text-sm"
-                >
-                  {t.busy ? (
-                    <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
-                  ) : (
-                    <Power className="size-4" strokeWidth={1.8} />
-                  )}
-                  Stop tunnel
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Stop tunnel?</DialogTitle>
-                  <DialogDescription>
-                    This will disconnect the tunnel and stop serving traffic. You can start it again
-                    at any time.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
+          <div className="relative inline-flex">
+            {t.online ? (
+              <Dialog>
+                <DialogTrigger asChild>
                   <Button
+                    disabled={t.busy}
                     variant="secondary"
-                    onClick={t.handleToggleTunnel}
-                    className="h-10 rounded-xl px-4"
+                    className="h-10 rounded-xl px-4 text-sm"
                   >
+                    {t.busy ? (
+                      <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
+                    ) : (
+                      <Power className="size-4" strokeWidth={1.8} />
+                    )}
                     Stop tunnel
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          ) : (
-            <Button
-              onClick={t.handleToggleTunnel}
-              disabled={t.busy || !t.tokenReady}
-              variant="default"
-              className="h-10 rounded-xl px-4 text-sm"
-            >
-              {t.busy ? (
-                <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
-              ) : (
-                <Power className="size-4" strokeWidth={1.8} />
-              )}
-              Start tunnel
-            </Button>
-          )}
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Stop tunnel?</DialogTitle>
+                    <DialogDescription>
+                      This will disconnect the tunnel and stop serving traffic. You can start it
+                      again at any time.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="secondary"
+                      onClick={t.handleToggleTunnel}
+                      className="h-10 rounded-xl px-4"
+                    >
+                      Stop tunnel
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <Button
+                onClick={t.handleToggleTunnel}
+                disabled={t.busy || !t.tokenReady}
+                variant="default"
+                className="h-10 rounded-xl px-4 text-sm"
+              >
+                {t.busy ? (
+                  <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
+                ) : (
+                  <Power className="size-4" strokeWidth={1.8} />
+                )}
+                Start tunnel
+              </Button>
+            )}
+          </div>
           <Button
             onClick={t.handleRestartTunnel}
             disabled={t.busy || !t.tokenReady}

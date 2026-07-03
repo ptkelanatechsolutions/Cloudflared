@@ -12,6 +12,12 @@ export const tunnelSettingsSchema = z.object({
   metricsPort: z.number().int().min(1).max(65535).default(60123),
   /** Start the tunnel automatically on boot when a token is present. */
   autoStart: z.boolean().default(true),
+  /** Graceful shutdown duration in seconds before SIGKILL (--grace-period). 0 = disabled. */
+  gracePeriod: z.number().int().min(0).max(600).default(0),
+  /** Log verbosity (--loglevel). "info" = omit (cloudflared default). */
+  logLevel: z.enum(["debug", "info", "warn", "error", "fatal"]).default("info"),
+  /** Automatically restart the tunnel every N hours. 0 = disabled. */
+  scheduledRestartHours: z.number().min(0).max(168).default(0),
 });
 
 export type TunnelSettings = z.infer<typeof tunnelSettingsSchema>;

@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowDownToLine, Loader2, Maximize2, Minus, ScrollText } from "lucide-react";
+import { ArrowDownToLine, ListVideo, Loader2, Maximize2, Minus, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,11 +18,13 @@ function getViewport(root: HTMLElement): HTMLElement | null {
   return root.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]');
 }
 
+function getScrollDistanceFromBottom(viewport: HTMLElement): number {
+  return viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+}
+
 export function LogDialog({ t }: { t: Tunnel }) {
-  const [open, setOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dialogScrollRef = useRef<HTMLDivElement>(null);
-  const [followLogs, setFollowLogs] = useState(true);
 
   const scrollPreviewToBottom = useCallback(() => {
     const el = scrollRef.current;
@@ -30,41 +33,44 @@ export function LogDialog({ t }: { t: Tunnel }) {
     if (viewport) viewport.scrollTop = viewport.scrollHeight;
   }, []);
 
-  const scrollDialogToBottom = useCallback(() => {
+  const handleDialogScroll = useCallback(() => {
     const el = dialogScrollRef.current;
     if (!el) return;
     const viewport = getViewport(el);
-    if (viewport) viewport.scrollTop = viewport.scrollHeight;
-  }, []);
+    if (!viewport) return;
+    const distance = getScrollDistanceFromBottom(viewport);
+    t.setFollowLogs(distance <= LOG_FOLLOW_THRESHOLD);
+  }, [t]);
 
-  useEffect(() => {
-    if (t.logs.length > 0 && !open) {
-      requestAnimationFrame(scrollPreviewToBottom);
-    }
-  }, [t.logs.length, open, scrollPreviewToBottom]);
-
-  useEffect(() => {
-    if (open && followLogs) {
-      requestAnimationFrame(scrollDialogToBottom);
-    }
-  }, [open, followLogs, t.logs.length, scrollDialogToBottom]);
-
+  // Attach scroll listener to dialog viewport
   useEffect(() => {
     const el = dialogScrollRef.current;
     if (!el) return;
     const viewport = getViewport(el);
     if (!viewport) return;
+    viewport.addEventListener("scroll", handleDialogScroll, { passive: true });
+    return () => viewport.removeEventListener("scroll", handleDialogScroll);
+  }, [handleDialogScroll]);
 
-    const handleScroll = () => {
-      const distance = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
-      setFollowLogs(distance <= LOG_FOLLOW_THRESHOLD);
-    };
+  // Auto-scroll preview when dialog is closed and new logs arrive
+  useEffect(() => {
+    if (t.logs.length > 0 && !t.logDialogOpen) {
+      requestAnimationFrame(scrollPreviewToBottom);
+    }
+  }, [t.logs.length, t.logDialogOpen, scrollPreviewToBottom]);
 
-    viewport.addEventListener("scroll", handleScroll, { passive: true });
-    return () => viewport.removeEventListener("scroll", handleScroll);
-  }, [open]);
+  // Auto-scroll dialog viewport when follow is enabled
+  useEffect(() => {
+    if (!t.logDialogOpen || !t.followLogs) return;
+    const el = dialogScrollRef.current;
+    if (!el) return;
+    const viewport = getViewport(el);
+    if (!viewport) return;
+    viewport.scrollTop = viewport.scrollHeight;
+  }, [t.logDialogOpen, t.followLogs, t.logs.length]);
 
-  const previewLines = t.logs.slice(0, LOG_PREVIEW_LINES);
+  // Show 10 latest log lines in the preview, not 10 earliest
+  const previewLines = t.logs.slice(-LOG_PREVIEW_LINES);
   const overflowCount = t.logs.length - LOG_PREVIEW_LINES;
 
   return (
@@ -73,12 +79,12 @@ export function LogDialog({ t }: { t: Tunnel }) {
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
             <ScrollText className="size-3.5" strokeWidth={1.8} />
-            Event log
+            Tunnel log
           </span>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setOpen(true)}
+            onClick={() => t.setLogDialogOpen(true)}
             className="h-8 rounded-lg px-3 text-xs text-muted-foreground"
           >
             <Maximize2 className="size-3.5" strokeWidth={1.8} />
@@ -103,18 +109,17 @@ export function LogDialog({ t }: { t: Tunnel }) {
           {t.logs.length > 0 && (
             <div ref={scrollRef}>
               <ScrollArea className="max-h-56 rounded-xl border border-border/50 bg-muted/15">
-                <div role="log" className="space-y-0.5 p-3.5 font-mono text-[13px] leading-6">
+                <motion.div
+                  role="log"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.25, ease: EASE }}
+                  className="space-y-0.5 p-3.5 font-mono text-[13px] leading-6"
+                >
                   {previewLines.map((line, i) => (
-                    <motion.div
-                      key={`${i}-${line}`}
-                      initial={{ opacity: 0, x: t.reducedMotion ? 0 : -6 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.25, ease: EASE, delay: i < 5 ? 0.03 * i : 0 }}
-                    >
-                      {line}
-                    </motion.div>
+                    <div key={`${i}-${line}`}>{line}</div>
                   ))}
-                </div>
+                </motion.div>
               </ScrollArea>
             </div>
           )}
@@ -131,7 +136,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
               >
                 <button
                   type="button"
-                  onClick={() => setOpen(true)}
+                  onClick={() => t.setLogDialogOpen(true)}
                   className="cursor-pointer rounded-lg border border-border px-3 py-1 text-xs text-foreground transition-colors hover:bg-muted"
                 >
                   +{overflowCount} more {overflowCount === 1 ? "entry" : "entries"}
@@ -142,15 +147,31 @@ export function LogDialog({ t }: { t: Tunnel }) {
         </div>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={t.logDialogOpen} onOpenChange={t.setLogDialogOpen}>
         <DialogContent
           showCloseButton={false}
           className="flex max-h-[80vh] w-[calc(100%-2rem)] max-w-3xl flex-col gap-0 p-0"
         >
           <DialogHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border px-5 py-3.5">
-            <DialogTitle className="sr-only">Full event log</DialogTitle>
-            <Eyebrow icon={ScrollText}>Full event log</Eyebrow>
+            <DialogTitle className="sr-only">Full tunnel log</DialogTitle>
+            <Eyebrow icon={ScrollText}>Full tunnel log</Eyebrow>
             <div className="flex items-center gap-2">
+              {t.followLogs && (
+                <Badge variant="outline" className="rounded-full px-2.5 text-xs font-normal">
+                  <ListVideo className="mr-1 size-3" strokeWidth={1.8} />
+                  Auto-scroll
+                </Badge>
+              )}
+              {!t.followLogs && (
+                <button
+                  type="button"
+                  onClick={t.jumpToLatest}
+                  className="flex cursor-pointer items-center gap-1 rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-muted"
+                >
+                  <ListVideo className="size-3" strokeWidth={1.8} />
+                  Scroll to latest
+                </button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -164,7 +185,7 @@ export function LogDialog({ t }: { t: Tunnel }) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setOpen(false)}
+                onClick={() => t.setLogDialogOpen(false)}
                 className="h-8 rounded-lg px-3 text-xs text-muted-foreground"
               >
                 <Minus className="size-3.5" strokeWidth={1.8} />

@@ -36,6 +36,9 @@ void describe("ConfigStore", () => {
         metricsEnabled: true,
         metricsPort: 9999,
         autoStart: false,
+        gracePeriod: 0,
+        logLevel: "info",
+        scheduledRestartHours: 0,
       },
     });
 
@@ -59,6 +62,9 @@ void describe("ConfigStore", () => {
         metricsEnabled: false,
         metricsPort: 60123,
         autoStart: true,
+        gracePeriod: 0,
+        logLevel: "info",
+        scheduledRestartHours: 0,
       },
     });
 
@@ -86,6 +92,9 @@ void describe("ConfigStore", () => {
         metricsEnabled: false,
         metricsPort: 60123,
         autoStart: false,
+        gracePeriod: 0,
+        logLevel: "info",
+        scheduledRestartHours: 0,
       },
     });
 

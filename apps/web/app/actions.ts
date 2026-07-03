@@ -4,6 +4,7 @@ import {
   cloudflaredManager,
   configStore,
   tunnelSettingsSchema,
+  appConfigSchema,
   type TunnelSettings,
 } from "@cloudflared/core";
 import type { DashboardState } from "@/lib/dashboard";
@@ -15,6 +16,9 @@ async function snapshot(): Promise<DashboardState> {
     settings: config.settings,
     tokenSet: config.token.length > 0,
     logs: cloudflaredManager.getLogs(),
+    connectorInfo: cloudflaredManager.getConnectorInfo(),
+    stateHistory: cloudflaredManager.getStateHistory(),
+    metrics: cloudflaredManager.getMetrics().latest,
   };
 }
 
@@ -55,6 +59,32 @@ export async function saveSettingsAndRestart(input: TunnelSettings): Promise<Das
   const config = await configStore.update({ settings });
   cloudflaredManager.restart(config.token, config.settings);
   return snapshot();
+}
+
+/* ── Export / Import config ──────────────────────────── */
+
+export async function exportConfig(includeToken: boolean): Promise<string> {
+  const config = await configStore.read();
+  if (!includeToken) {
+    return JSON.stringify({ settings: config.settings }, null, 2);
+  }
+  return JSON.stringify(config, null, 2);
+}
+
+export async function importConfig(json: string): Promise<DashboardState> {
+  const parsed = JSON.parse(json);
+  const config = appConfigSchema.parse(parsed);
+  await configStore.write(config);
+  if (cloudflaredManager.isRunning()) {
+    cloudflaredManager.restart(config.token, config.settings);
+  }
+  return snapshot();
+}
+
+/* ── Diagnostics ─────────────────────────────────────── */
+
+export async function runDiagnostics() {
+  return cloudflaredManager.runDiagnostics();
 }
 
 /* ── Version checker ────────────────────────────────── */

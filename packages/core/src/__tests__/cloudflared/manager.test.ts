@@ -11,6 +11,9 @@ void describe("CloudflaredManager", () => {
     metricsEnabled: false,
     metricsPort: 60123,
     autoStart: true,
+    gracePeriod: 0,
+    logLevel: "info" as const,
+    scheduledRestartHours: 0,
   };
 
   void it("initial status is stopped", () => {
@@ -75,6 +78,9 @@ void describe("buildArgs", () => {
     metricsEnabled: false,
     metricsPort: 60123,
     autoStart: true,
+    gracePeriod: 0,
+    logLevel: "info" as const,
+    scheduledRestartHours: 0,
   };
 
   void it("builds minimal args for auto settings without metrics", () => {

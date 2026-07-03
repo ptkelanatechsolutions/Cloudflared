@@ -1,17 +1,23 @@
 "use client";
 
-import { Activity, Clock3, Gauge, Logs, Waypoints } from "lucide-react";
+import { Activity, ChevronDown, ChevronUp, Clock3, Gauge, Logs, Waypoints } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { PanelShell } from "@/components/panel-shell";
 import { Separator } from "@/components/ui/separator";
 import { Eyebrow } from "@/components/eyebrow";
 import { RuntimeField } from "@/components/runtime-field";
 import { LogDialog } from "@/components/sections/log-dialog";
-import { formatTimestamp, formatUptime } from "@/lib/tunnel";
+import { ConnectorInfo } from "@/components/connector-info";
+import { StateTimeline } from "@/components/state-timeline";
+import { formatBytes, formatTimestamp, formatUptime, STATE_META } from "@/lib/tunnel";
+import { useState } from "react";
 import type { Tunnel } from "@/components/use-tunnel";
 
 export function ObservabilityCard({ t }: { t: Tunnel }) {
+  const [showTimeline, setShowTimeline] = useState(false);
+
   return (
     <PanelShell reducedMotion={t.reducedMotion} delay={0.12} className="xl:col-span-5">
       <CardContent className="flex flex-col gap-4 px-5 pt-5 pb-5">
@@ -24,7 +30,10 @@ export function ObservabilityCard({ t }: { t: Tunnel }) {
           )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        {/* Connector info */}
+        <ConnectorInfo info={t.connectorInfo} onCopy={t.handleCopyConnectorId} />
+
+        <div className="grid gap-3 sm:grid-cols-3">
           <RuntimeField icon={Activity} label="State" value={t.meta.badge} hint={t.meta.detail} />
           <RuntimeField
             icon={Clock3}
@@ -37,18 +46,35 @@ export function ObservabilityCard({ t }: { t: Tunnel }) {
             }
           />
           <RuntimeField
-            icon={Waypoints}
-            label="PID / Exit"
-            value={`${t.status.pid ?? "-"} / ${t.status.exitCode ?? "-"}`}
-            hint="Current child PID and the last recorded exit code."
-          />
-          <RuntimeField
             icon={Gauge}
             label="Metrics"
             value={
               t.state.settings.metricsEnabled ? `:${t.state.settings.metricsPort}` : "Disabled"
             }
             hint={t.metricsUrl ?? "Enable metrics to expose a scrape target."}
+          />
+          <RuntimeField
+            icon={Waypoints}
+            label="PID / Exit"
+            value={`${t.status.pid ?? "-"} / ${t.status.exitCode ?? "-"}`}
+            hint="Current child PID and the last recorded exit code."
+          />
+          {/* Traffic stats — always present, show "-" when metrics unavailable */}
+          <RuntimeField
+            icon={Activity}
+            label="Ingress"
+            value={t.metrics ? formatBytes(t.metrics.totalIngressBytes) : "-"}
+            hint={
+              t.metrics ? `${formatBytes(t.metrics.ingressRate)}/s` : "Enable metrics for live data"
+            }
+          />
+          <RuntimeField
+            icon={Activity}
+            label="Egress"
+            value={t.metrics ? formatBytes(t.metrics.totalEgressBytes) : "-"}
+            hint={
+              t.metrics ? `${formatBytes(t.metrics.egressRate)}/s` : "Enable metrics for live data"
+            }
           />
         </div>
 
@@ -64,6 +90,24 @@ export function ObservabilityCard({ t }: { t: Tunnel }) {
             <p className="mt-1 text-sm leading-5 text-destructive">{t.status.lastError}</p>
           </div>
         ) : null}
+
+        {/* State timeline toggle */}
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowTimeline(!showTimeline)}
+            className="h-8 w-full justify-between rounded-lg px-3 text-xs text-muted-foreground"
+          >
+            <span>State history</span>
+            {showTimeline ? (
+              <ChevronUp className="size-3.5" strokeWidth={1.8} />
+            ) : (
+              <ChevronDown className="size-3.5" strokeWidth={1.8} />
+            )}
+          </Button>
+          {showTimeline && <StateTimeline history={t.stateHistory} labelMap={STATE_META} />}
+        </div>
 
         <Separator />
 

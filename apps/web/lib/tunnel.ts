@@ -28,6 +28,14 @@ export const EDGE_OPTIONS = [
   { value: "6", label: "IPv6" },
 ] as const satisfies ReadonlyArray<ToggleOption<TunnelSettings["edgeIpVersion"]>>;
 
+export const LOG_LEVEL_OPTIONS: ToggleOption<TunnelSettings["logLevel"]>[] = [
+  { value: "debug", label: "Debug" },
+  { value: "info", label: "Info" },
+  { value: "warn", label: "Warn" },
+  { value: "error", label: "Error" },
+  { value: "fatal", label: "Fatal" },
+] as const;
+
 export const STATE_META: Record<
   TunnelState,
   {
@@ -88,7 +96,10 @@ export function settingsEqual(a: TunnelSettings, b: TunnelSettings): boolean {
     a.edgeIpVersion === b.edgeIpVersion &&
     a.metricsEnabled === b.metricsEnabled &&
     a.metricsPort === b.metricsPort &&
-    a.autoStart === b.autoStart
+    a.autoStart === b.autoStart &&
+    a.gracePeriod === b.gracePeriod &&
+    a.logLevel === b.logLevel &&
+    a.scheduledRestartHours === b.scheduledRestartHours
   );
 }
 
@@ -112,4 +123,25 @@ export function formatUptime(startedAt: string | null, state: TunnelState): stri
   if (hours > 0) return `${hours}h ${minutes}m`;
   if (minutes > 0) return `${minutes}m ${seconds}s`;
   return `${seconds}s`;
+}
+
+export function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  const value = bytes / Math.pow(1024, i);
+  return `${value.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+export function formatTimeAgo(iso: string): string {
+  const elapsed = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 1000));
+  if (elapsed < 60) return `${elapsed}s ago`;
+  if (elapsed < 3600) return `${Math.floor(elapsed / 60)}m ago`;
+  if (elapsed < 86400) return `${Math.floor(elapsed / 3600)}h ago`;
+  return `${Math.floor(elapsed / 86400)}d ago`;
+}
+
+export function formatConnectorId(id: string | null): string | null {
+  if (!id || id.length <= 8) return id;
+  return `${id.slice(0, 8)}...`;
 }

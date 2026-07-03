@@ -11,7 +11,7 @@ export function PulseDot({ tone }: { tone: Tone }) {
   const reducedMotion = useReducedMotion();
 
   return (
-    <span className="relative flex size-2.5">
+    <span aria-hidden="true" className="relative flex size-2.5">
       {tone === "active" && !reducedMotion ? (
         <motion.span
           className={cn("absolute inline-flex size-full rounded-full", color)}

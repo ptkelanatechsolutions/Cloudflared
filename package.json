@@ -34,7 +34,7 @@
     "start": "pnpm --filter @cloudflared/web start",
     "lint": "pnpm --filter @cloudflared/web lint && pnpm --filter @cloudflared/core lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter @cloudflared/core test",
+    "test": "pnpm --filter @cloudflared/core test && pnpm --filter @cloudflared/web test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "bump": "node scripts/version.js",

@@ -21,9 +21,20 @@ import {
   saveToken,
   startTunnel,
   stopTunnel,
+  exportConfig,
+  importConfig,
+  runDiagnostics,
 } from "@/app/actions";
 import type { DashboardState } from "@/lib/dashboard";
-import type { TunnelSettings, TunnelStatus } from "@cloudflared/core";
+import type {
+  TunnelSettings,
+  TunnelStatus,
+  ConnectorInfo,
+  StateTransition,
+  TunnelMetrics,
+  DiagnosticsResult,
+} from "@cloudflared/core";
+import type { TunnelMetricsSnapshot } from "@cloudflared/core";
 import {
   POLL_MS,
   CONNECTION_TIMEOUT_MS,
@@ -74,6 +85,20 @@ export interface Tunnel {
   handleDiscardDraft: () => void;
   handleExportLogs: () => void;
   jumpToLatest: () => void;
+  connectorInfo: ConnectorInfo;
+  stateHistory: StateTransition[];
+  metrics: TunnelMetrics | null;
+  metricsHistory: TunnelMetricsSnapshot[];
+  handleCopyConnectorId: () => void;
+  exportImportDialogOpen: boolean;
+  setExportImportDialogOpen: Dispatch<SetStateAction<boolean>>;
+  handleExportConfig: (includeToken: boolean) => void;
+  handleImportConfig: (json: string) => Promise<void>;
+  diagnosticsResult: DiagnosticsResult | null;
+  diagnosticsRunning: boolean;
+  handleRunDiagnostics: () => void;
+  diagnosticsDialogOpen: boolean;
+  setDiagnosticsDialogOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 function getErrorMessage(err: unknown): string {
@@ -98,6 +123,12 @@ export function useTunnel(initial: DashboardState): Tunnel {
   const logs = useDeferredValue(state.logs);
   const [logDialogOpen, setLogDialogOpen] = useState(false);
   const lastPollTimeRef = useRef(0);
+  const [metricsHistory, setMetricsHistory] = useState<TunnelMetricsSnapshot[]>([]);
+  const [exportImportDialogOpen, setExportImportDialogOpen] = useState(false);
+  const [diagnosticsResult, setDiagnosticsResult] = useState<DiagnosticsResult | null>(null);
+  const [diagnosticsRunning, setDiagnosticsRunning] = useState(false);
+  const [diagnosticsDialogOpen, setDiagnosticsDialogOpen] = useState(false);
+  const metricsHistoryPrevRef = useRef<DashboardState["metrics"]>(null);
 
   // Initialize poll timestamp after first render
   useEffect(() => {
@@ -200,6 +231,25 @@ export function useTunnel(initial: DashboardState): Tunnel {
     if (!viewport || !followLogs) return;
     viewport.scrollTop = viewport.scrollHeight;
   }, [followLogs, logs]);
+
+  // Accumulate metrics history on the client
+  useEffect(() => {
+    const prev = metricsHistoryPrevRef.current;
+    const m = state.metrics;
+    // Only push when metrics change (different total bytes/metrics snapshot)
+    if (
+      m &&
+      (!prev ||
+        prev.totalEgressBytes !== m.totalEgressBytes ||
+        prev.totalIngressBytes !== m.totalIngressBytes)
+    ) {
+      setMetricsHistory((h) => {
+        const next = [...h, { timestamp: new Date().toISOString(), metrics: m }];
+        return next.length > 120 ? next.slice(-120) : next;
+      });
+    }
+    metricsHistoryPrevRef.current = m;
+  }, [state.metrics]);
 
   const { status } = state;
   const meta = STATE_META[status.state];
@@ -355,6 +405,58 @@ export function useTunnel(initial: DashboardState): Tunnel {
     toast.success("Logs exported");
   }
 
+  function handleCopyConnectorId() {
+    const id = state.connectorInfo.id;
+    if (!id) return;
+    void navigator.clipboard.writeText(id);
+    toast.success("Connector ID copied");
+  }
+
+  function handleExportConfig(includeToken: boolean) {
+    startMutation(async () => {
+      try {
+        const json = await exportConfig(includeToken);
+        const file = new Blob([json, "\n"], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(file);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `cloudflared-config.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        toast.success(includeToken ? "Config with token exported" : "Config exported");
+      } catch (err) {
+        toast.error(getErrorMessage(err), { description: "Failed to export config." });
+      }
+    });
+  }
+
+  async function handleImportConfig(json: string) {
+    try {
+      const next = await importConfig(json);
+      setState(next);
+      setExportImportDialogOpen(false);
+      toast.success("Config imported and applied");
+    } catch (err) {
+      toast.error(getErrorMessage(err), { description: "Failed to import config." });
+    }
+  }
+
+  function handleRunDiagnostics() {
+    setDiagnosticsRunning(true);
+    setDiagnosticsResult(null);
+    startMutation(async () => {
+      try {
+        const result = await runDiagnostics();
+        setDiagnosticsResult(result);
+        setDiagnosticsDialogOpen(true);
+      } catch (err) {
+        toast.error(getErrorMessage(err), { description: "Diagnostics failed." });
+      } finally {
+        setDiagnosticsRunning(false);
+      }
+    });
+  }
+
   function jumpToLatest() {
     const viewport = logViewportRootRef.current?.querySelector<HTMLElement>(
       '[data-slot="scroll-area-viewport"]',
@@ -372,8 +474,8 @@ export function useTunnel(initial: DashboardState): Tunnel {
       e.preventDefault();
       handleToggleTunnel();
     }
-    // Ctrl/Cmd + L: open logs
-    if ((e.metaKey || e.ctrlKey) && e.key === "l") {
+    // Ctrl/Cmd + Shift + L: open logs (avoid browser address-bar conflict on Windows/Linux)
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "l") {
       e.preventDefault();
       setLogDialogOpen(true);
     }
@@ -427,5 +529,19 @@ export function useTunnel(initial: DashboardState): Tunnel {
     handleDiscardDraft,
     handleExportLogs,
     jumpToLatest,
+    connectorInfo: state.connectorInfo,
+    stateHistory: state.stateHistory,
+    metrics: state.metrics,
+    metricsHistory,
+    handleCopyConnectorId,
+    exportImportDialogOpen,
+    setExportImportDialogOpen,
+    handleExportConfig,
+    handleImportConfig,
+    diagnosticsResult,
+    diagnosticsRunning,
+    handleRunDiagnostics,
+    diagnosticsDialogOpen,
+    setDiagnosticsDialogOpen,
   };
 }

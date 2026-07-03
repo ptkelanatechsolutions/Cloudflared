@@ -9,6 +9,8 @@ import type { VersionCheck } from "@/app/actions";
 const EASE: [number, number, number, number] = [0.32, 0.72, 0, 1];
 const RELEASES_URL = "https://github.com/ptkelanatechsolutions/Cloudflared/releases";
 
+const tooltipId = "version-tooltip";
+
 export function VersionNotification() {
   const [info, setInfo] = useState<VersionCheck | null>(null);
   const [fetchState, setFetchState] = useState<"idle" | "loading" | "error">("idle");
@@ -55,8 +57,9 @@ export function VersionNotification() {
       <button
         type="button"
         onFocus={handleOpen}
-        onBlur={handleClose}
+        onBlur={() => setIsOpen(false)}
         onClick={handleClick}
+        aria-describedby={isOpen ? tooltipId : undefined}
         className="flex items-center gap-1 rounded-md bg-muted/40 px-2 py-px text-[11px] font-medium tracking-tight text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
         aria-label={
           hasUpdate
@@ -99,6 +102,8 @@ function Tooltip({ info, hasUpdate, fetchState, onRefresh }: TooltipProps) {
 
   return (
     <motion.div
+      id={tooltipId}
+      role="tooltip"
       initial={{ opacity: 0, scale: 0.95, y: -4 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: -4 }}

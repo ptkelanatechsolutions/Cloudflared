@@ -6,3 +6,21 @@ node_modules/
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+
+# Turborepo
+.turbo/
+
+# Build outputs & generated files
+coverage/
+out/
+build/
+dist/
+CHANGELOG.md
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment files
+.env*
+
+# Debug logs
+*.log*
