@@ -1,5 +1,114 @@
 # Changelog
 
+## [1.10.0] 2026-07-03 [(7dfc27b)](https://github.com/ptkelanatechsolutions/Cloudflared/commit/7dfc27beb77db9fd6991ddd997cde733bd5bbe07)
+
+### Added
+
+**Health API Endpoint**
+
+- Added `/api/health` route returning `200 OK` for Docker HEALTHCHECK and external monitoring.
+
+**SVG Performance Graph**
+
+- Added live SVG chart in the new PerformanceGraph component showing tunnel connections and bandwidth (egress rate) over the last ~120 data points.
+- Dual-path rendering with grid lines, auto-scaling Y-axis (B/KB/MB), and relative time labels.
+- Loading state differentiates between "Tunnel offline" (static icon) and "Collecting metrics" (spinner).
+
+**Network Diagnostics Dialog**
+
+- Added on-demand diagnostics panel that checks cloudflared binary availability, DNS resolution, edge connectivity, and the metrics endpoint.
+- Displays per-check pass/fail status with environment info (Node version, platform, arch).
+
+**Export/Import Configuration Dialog**
+
+- Added export/import dialog for backing up and restoring tunnel configuration as JSON.
+- Export optionally includes or excludes the tunnel token.
+- Import applies the configuration and restarts the tunnel if active, with a confirmation prompt before overwriting.
+
+**State History Timeline**
+
+- Added collapsible state history timeline in the Observability card, showing the last 10 state transitions with color-coded dots and relative timestamps.
+
+**Connector Info Display**
+
+- Added connector ID and edge location display with one-click copy in the Observability card.
+
+**Test Infrastructure**
+
+- Added Vitest configuration for `@cloudflared/web` and `@cloudflared/core`.
+- Added test suites for `CloudflaredManager`, `ConfigStore`, `tunnel.ts` utilities, and log dialog behavior.
+
+**Ignore File Hygiene**
+
+- `.gitignore`: Added `.turbo/`, `.vscode/`, `.idea/`, `dist/`, `.claude/`.
+- `.dockerignore`: Added `**/*.tsbuildinfo`, `**/coverage`, `**/out`, `scripts/`, project docs and config files not needed at runtime.
+- `.prettierignore`: Added `.turbo/`, `coverage/`, `out/`, `build/`, `dist/`, `CHANGELOG.md`, `*.tsbuildinfo`, `next-env.d.ts`, `.env*`, `*.log*`.
+- Removed empty `.npmignore` (all packages are `private: true`).
+
+### Changed
+
+**Token & Settings Workflow**
+
+- Save/Discard buttons moved from the Token card to the Settings card, where the configuration fields are displayed.
+- Removed the now-redundant hint text pointing users to the Token card for saving.
+
+**Input Container Pattern**
+
+- Extracted the repeated nested border pattern into a reusable `InputContainer` component at `components/ui/input-container.tsx`.
+- Replaced 4 instances across `TokenCard` and `SettingsCard` with the new component.
+
+**Keyboard Shortcut**
+
+- Log dialog shortcut changed from `Ctrl/Cmd+L` to `Ctrl/Cmd+Shift+L` to avoid the native browser address-bar shortcut on Windows/Linux.
+
+**Log Dialog Animation**
+
+- Log preview animation reduced from per-line `motion.div` wrappers with staggered delays to a single container-level `motion.div`, cutting Motion animation nodes from N to 1.
+
+**CSS and Theme Tokens**
+
+- Added `--color-chart-primary` and `--color-chart-secondary` to `@theme inline` for dedicated chart colours.
+- Updated `PerformanceGraph` SVG strokes to reference the new chart-specific tokens.
+
+**Server Actions**
+
+- Added `exportConfig`, `importConfig`, and `runDiagnostics` server actions.
+- Config import includes `appConfigSchema` validation before applying changes.
+
+### Fixed
+
+**Chart Color Variables**
+
+- Fixed `PerformanceGraph` connections path using `var(--color-primary)` which resolved to a neutral gray instead of the intended blue.
+- Fixed bandwidth path using the undefined `var(--color-emerald-500)` which relied entirely on a hardcoded fallback.
+- Both paths now reference the dedicated chart colour tokens.
+
+**Accessibility**
+
+- Added `aria-hidden="true"` to `PulseDot` container — the dot is purely decorative and tunnel status is already conveyed by adjacent text.
+- Version notification tooltip now includes `role="tooltip"`, a stable `id`, and `aria-describedby` on the trigger for screen reader support.
+- Tooltip `onBlur` handler changed from a 200ms timeout to instant close for reliable keyboard navigation.
+
+**Observability Card Grid Stability**
+
+- Traffic stat items (Ingress/Egress) changed from conditional DOM rendering to always-present elements, preventing layout shifts when metrics appear or disappear during polling.
+
+**Hero Card Button Stability**
+
+- Start/Stop tunnel buttons wrapped in a stable `<div>` container, preventing DOM restructuring that could cause layout jumps when toggling between states.
+
+**ErrorBoundary Safe Reset**
+
+- "Try again" button now increments a `resetKey` state, and children are rendered inside a `<div key={resetKey}>` to force a full React remount, discarding corrupted component state.
+
+**SVG Aspect Ratio**
+
+- Added `h-auto` to the PerformanceGraph SVG so the `viewBox` aspect ratio is respected across all viewport widths.
+
+**ConnectorInfo Responsive Wrapping**
+
+- Added `flex-wrap sm:flex-nowrap` to prevent the connector ID and edge location segments from colliding on viewports narrower than 360px.
+
 ## [1.9.0] 2026-06-23 [(20365c9)](https://github.com/ptkelanatechsolutions/Cloudflared/commit/20365c93f434768e84c6888978093f0eba062f96)
 
 ### Added
